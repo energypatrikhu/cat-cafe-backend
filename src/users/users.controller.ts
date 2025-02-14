@@ -16,6 +16,7 @@ export class UsersController {
     examples: {
       user: {
         value: {
+          name: 'Someone Special',
           email: 'someone@example.com',
           password: '@V3Ri$tr0ngP@$$w0rd',
         },

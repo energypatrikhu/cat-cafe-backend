@@ -50,6 +50,7 @@ export class UsersService {
 
     await this.db.user.create({
       data: {
+        name: createUserDto.name,
         email: createUserDto.email,
         password: await hash(createUserDto.password),
       },
