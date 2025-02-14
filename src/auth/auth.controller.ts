@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Delete } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
@@ -38,7 +38,7 @@ export class AuthController {
   /**
    * Logout a user by deleting their token.
    */
-  @Post('logout')
+  @Delete('logout')
   @ApiBody({
     type: DestroyAuthDto,
     examples: {
@@ -50,7 +50,12 @@ export class AuthController {
       },
     },
   })
+  @ApiResponse({
+    status: 200,
+    description: 'Logout successful',
+  })
   async logout(@Body() body: DestroyAuthDto) {
-    return this.authService.logout(body);
+    this.authService.logout(body);
+    return 'Logout successful';
   }
 }
