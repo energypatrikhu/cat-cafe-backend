@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import type { CreateAuthDto } from './dto/create-auth.dto';
+import type { LoginAuthDto } from './dto/login-auth.dto';
 import { verify } from 'argon2';
-import type { DestroyAuthDto } from './dto/destroy-auth.dto';
+import type { LogoutAuthDto } from './dto/logout-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
     return null;
   }
 
-  async login(createAuthDto: CreateAuthDto) {
+  async login(createAuthDto: LoginAuthDto) {
     const user = await this.userService.findByEmail(createAuthDto.email);
 
     if (!user) {
@@ -38,7 +38,7 @@ export class AuthService {
     return { token };
   }
 
-  async logout(destroyAuthDto: DestroyAuthDto) {
+  async logout(destroyAuthDto: LogoutAuthDto) {
     return this.userService.deleteToken(destroyAuthDto.token);
   }
 }

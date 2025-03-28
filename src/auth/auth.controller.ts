@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Delete, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { ApiBody, ApiResponse } from '@nestjs/swagger';
-import { DestroyAuthDto } from './dto/destroy-auth.dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
+import { ApiBearerAuth, ApiBody, ApiResponse } from '@nestjs/swagger';
+import { LogoutAuthDto } from './dto/logout-auth.dto';
+import { BearerAuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -13,7 +14,7 @@ export class AuthController {
    */
   @Post('login')
   @ApiBody({
-    type: CreateAuthDto,
+    type: LoginAuthDto,
     examples: {
       user: {
         value: {
@@ -31,7 +32,7 @@ export class AuthController {
         'otv6b4rotb84rv6ot86br3t82r6bo32rtv8bo632b5tv8o62t6b8o57ot86wagzku',
     },
   })
-  async login(@Body() body: CreateAuthDto) {
+  async login(@Body() body: LoginAuthDto) {
     return this.authService.login(body);
   }
 
@@ -40,7 +41,7 @@ export class AuthController {
    */
   @Delete('logout')
   @ApiBody({
-    type: DestroyAuthDto,
+    type: LogoutAuthDto,
     examples: {
       user: {
         value: {
@@ -54,7 +55,13 @@ export class AuthController {
     status: 200,
     description: 'Logout successful',
   })
-  async logout(@Body() body: DestroyAuthDto) {
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth()
+  async logout(@Body() body: LogoutAuthDto) {
     this.authService.logout(body);
     return 'Logout successful';
   }
