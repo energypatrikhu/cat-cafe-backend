@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { randomBytes } from 'node:crypto';
-import type { CreateUserDto } from './dto/create-user.dto';
+import type { RegisterUserDto } from './dto/create-user.dto';
 import { hash } from 'argon2';
 
 @Injectable()
@@ -39,7 +39,7 @@ export class UsersService {
     return this.db.token.delete({ where: { token } });
   }
 
-  async register(createUserDto: CreateUserDto) {
+  async register(createUserDto: RegisterUserDto) {
     const checkUser = await this.db.user.findUnique({
       where: { email: createUserDto.email },
     });
@@ -57,5 +57,16 @@ export class UsersService {
     });
 
     return 'User created';
+  }
+
+  getMe(userId: number) {
+    return this.db.user.findUnique({
+      where: { id: userId },
+      select: {
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
   }
 }
