@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-keret-2024",
+  "name": "cat-coffee-backend",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -19,7 +19,11 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
+  "prisma": {
+    "seed": "ts-node ./prisma/seed.ts"
+  },
   "dependencies": {
+    "@faker-js/faker": "^9.6.0",
     "@nestjs/common": "11.0.9",
     "@nestjs/core": "11.0.9",
     "@nestjs/passport": "^11.0.5",

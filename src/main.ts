@@ -22,8 +22,8 @@ async function bootstrap() {
   app.setViewEngine('ejs');
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Cats Coffee Webshop API')
-    .setDescription('Ez az api-ja a cats coffee webshopnak')
+    .setTitle('Cat Coffee Webshop API')
+    .setDescription('Ez az api-ja a cat coffee webshopnak')
     .addBearerAuth()
     .build();
   const documentFactory = () =>
