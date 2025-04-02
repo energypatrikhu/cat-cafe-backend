@@ -1,8 +1,26 @@
 export class Product {
+  /**
+   * The unique identifier of the product
+   */
   id: number;
+
+  /**
+   * The name of the product
+   */
   name: string;
-  price: number;
+
+  /**
+   * The description of the product
+   */
   description: string;
-  url: string;
+
+  /**
+   * The price of the product
+   */
+  price: number;
+
+  /**
+   * The quantity of the product
+   */
   quantity: number;
 }
