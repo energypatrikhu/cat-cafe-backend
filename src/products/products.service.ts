@@ -1,17 +1,18 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { QueryProductDto } from './dto/query-product.dto';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(private db: PrismaService) {}
 
-  async create(
-    createProductDto: CreateProductDto,
-    image: Express.Multer.File,
-    userId: number,
-  ) {
+  async create(createProductDto: CreateProductDto, image: Express.Multer.File) {
     const productExists = await this.db.product.findFirst({
       where: {
         name: createProductDto.name,
@@ -28,16 +29,10 @@ export class ProductsService {
       data: {
         ...createProductDto,
         image: image.filename,
-        Uploader: {
-          connect: {
-            id: userId,
-          },
-        },
       },
     });
 
     delete product.image;
-    delete product.uploaderId;
     return product;
   }
 
@@ -96,29 +91,73 @@ export class ProductsService {
     });
   }
 
-  update(
+  async update(
     productId: number,
-    updateProductDto: CreateProductDto,
+    updateProductDto: UpdateProductDto,
     image: Express.Multer.File,
-    userId: any,
   ) {
+    const productExists = await this.db.product.findFirst({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!productExists) {
+      throw new NotFoundException(
+        `Product with id ${productId} does not exist`,
+      );
+    }
+
+    const productNameExists = await this.db.product.findFirst({
+      where: {
+        name: updateProductDto.name,
+      },
+    });
+
+    if (productNameExists && productNameExists.id !== productId) {
+      throw new ConflictException(
+        `Product with name ${updateProductDto.name} already exists`,
+      );
+    }
+
+    let newData: Record<string, string | number> = {};
+    if (updateProductDto.name) {
+      newData.name = updateProductDto.name;
+    }
+    if (updateProductDto.description) {
+      newData.description = updateProductDto.description;
+    }
+    if (updateProductDto.price) {
+      newData.price = updateProductDto.price;
+    }
+    if (updateProductDto.quantity) {
+      newData.quantity = updateProductDto.quantity;
+    }
+    if (image) {
+      newData.image = image.filename;
+    }
+
     return this.db.product.update({
       where: {
         id: productId,
       },
-      data: {
-        ...updateProductDto,
-        image: image.filename,
-        Uploader: {
-          connect: {
-            id: userId,
-          },
-        },
-      },
+      data: newData,
     });
   }
 
   async remove(productId: number) {
+    const productExists = await this.db.product.findFirst({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!productExists) {
+      throw new NotFoundException(
+        `Product with id ${productId} does not exist`,
+      );
+    }
+
     await this.db.product.delete({
       where: {
         id: productId,

@@ -35,6 +35,7 @@ import { diskStorage } from 'multer';
 import * as n_fs from 'node:fs';
 import * as n_crypto from 'node:crypto';
 import * as n_path from 'node:path';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 const allowedMimeTypes = ['image/jpeg', 'image/webp', 'image/png', 'image/gif'];
 
@@ -149,9 +150,7 @@ export class ProductsController {
       );
     }
 
-    const userId = req.user.id;
-
-    return this.productsService.create(createProductDto, image, userId);
+    return this.productsService.create(createProductDto, image);
   }
 
   /**
@@ -226,11 +225,41 @@ export class ProductsController {
    * Update a product by id (only for workers)
    */
   @Patch(':id')
+  @ApiConsumes('multipart/form-data')
   @ApiParam({
     name: 'id',
     required: true,
     description: 'Product ID',
     type: Number,
+  })
+  @ApiBody({
+    description: 'Product data',
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Product name',
+        },
+        description: {
+          type: 'string',
+          description: 'Product description',
+        },
+        price: {
+          type: 'number',
+          description: 'Product price',
+        },
+        quantity: {
+          type: 'number',
+          description: 'Product quantity',
+        },
+        image: {
+          type: 'string',
+          format: 'binary',
+          description: 'Product image',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -285,7 +314,7 @@ export class ProductsController {
   async update(
     @Request() req,
     @Param('id') id: string,
-    @Body() updateProductDto: CreateProductDto,
+    @Body() updateProductDto: UpdateProductDto,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -305,9 +334,7 @@ export class ProductsController {
       );
     }
 
-    const userId = req.user.id;
-
-    return this.productsService.update(+id, updateProductDto, image, userId);
+    return this.productsService.update(+id, updateProductDto, image);
   }
 
   /**

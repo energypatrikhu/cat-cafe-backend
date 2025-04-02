@@ -5,12 +5,6 @@ import { hash } from 'argon2';
 const prisma = new PrismaClient();
 
 async function seed_products() {
-  const userIds = await prisma.user.findMany({
-    where: {
-      role: 'WORKER',
-    },
-  });
-
   for (let i = 0; i < 10; i++) {
     await prisma.product.create({
       data: {
@@ -19,12 +13,6 @@ async function seed_products() {
         price: parseFloat(faker.commerce.price()),
         image: faker.string.uuid() + '.webp',
         quantity: faker.number.int({ min: 0, max: 100 }),
-        Uploader: {
-          connect: {
-            id: userIds[faker.number.int({ min: 0, max: userIds.length - 1 })]
-              .id,
-          },
-        },
       },
     });
   }
