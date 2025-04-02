@@ -6,12 +6,16 @@ import {
   Param,
   UseGuards,
   Request,
+  Patch,
+  ForbiddenException,
+  Delete,
 } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { BearerAuthGuard } from '../auth/auth.guard';
 import { Reservation } from './entities/reservation.entity';
+import { UpdateReservationDto } from './dto/update-reservation.dto';
 
 @Controller('reservations')
 @UseGuards(BearerAuthGuard)
@@ -104,5 +108,94 @@ export class ReservationsController {
     const userId = req.user.id;
 
     return this.reservationsService.findOne(userId, +id);
+  }
+
+  /**
+   * Update reservation. (Only for workers)
+   */
+  @Patch(':id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Reservation ID',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Reservation updated',
+    type: Reservation,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Reservation not found',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict',
+  })
+  update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateReservationDto: UpdateReservationDto,
+  ) {
+    const role = req.user.role as 'USER' | 'WORKER';
+    if (role !== 'WORKER') {
+      throw new ForbiddenException(
+        "You don't have permission to update a reservation",
+      );
+    }
+
+    const userId = req.user.id;
+    return this.reservationsService.update(userId, +id, updateReservationDto);
+  }
+
+  /**
+   * Delete reservation. (Only for workers)
+   */
+  @Delete(':id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Reservation ID',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Reservation deleted',
+    type: Reservation,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Reservation not found',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict',
+  })
+  remove(@Request() req, @Param('id') id: string) {
+    const role = req.user.role as 'USER' | 'WORKER';
+    if (role !== 'WORKER') {
+      throw new ForbiddenException(
+        "You don't have permission to delete a reservation",
+      );
+    }
+
+    return this.reservationsService.remove(+id);
   }
 }

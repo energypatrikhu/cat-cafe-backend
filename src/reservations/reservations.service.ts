@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import type { UpdateReservationDto } from './dto/update-reservation.dto';
 
 @Injectable()
 export class ReservationsService {
@@ -53,5 +55,53 @@ export class ReservationsService {
     }
 
     return reservation.Reservation;
+  }
+
+  async update(
+    userId: any,
+    reservationId: number,
+    updateReservationDto: UpdateReservationDto,
+  ) {
+    const reservation = await this.db.reservation.findFirst({
+      where: {
+        id: reservationId,
+        userId,
+      },
+    });
+    if (!reservation) {
+      throw new NotFoundException('Reservation not found');
+    }
+
+    const existingReservation = await this.db.reservation.findFirst({
+      where: {
+        id: reservationId,
+        date: updateReservationDto.date,
+      },
+    });
+    if (existingReservation) {
+      throw new ConflictException(
+        'There is already a reservation for this date',
+      );
+    }
+
+    return this.db.reservation.update({
+      where: { id: reservationId },
+      data: updateReservationDto,
+    });
+  }
+
+  async remove(reservationId: number) {
+    const reservation = await this.db.reservation.findUnique({
+      where: { id: reservationId },
+    });
+    if (!reservation) {
+      throw new NotFoundException('Reservation not found');
+    }
+
+    await this.db.reservation.delete({
+      where: { id: reservationId },
+    });
+
+    return 'Reservation deleted';
   }
 }
