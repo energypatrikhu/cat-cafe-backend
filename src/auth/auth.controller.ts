@@ -22,6 +22,12 @@ export class AuthController {
           password: '@V3Ri$tr0ngP@$$w0rd',
         },
       },
+      worker: {
+        value: {
+          email: 'worker@cat-cafe.hu',
+          password: 'worker-pass-123',
+        },
+      },
     },
   })
   @ApiResponse({
