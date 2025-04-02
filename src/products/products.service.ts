@@ -95,4 +95,36 @@ export class ProductsService {
       },
     });
   }
+
+  update(
+    productId: number,
+    updateProductDto: CreateProductDto,
+    image: Express.Multer.File,
+    userId: any,
+  ) {
+    return this.db.product.update({
+      where: {
+        id: productId,
+      },
+      data: {
+        ...updateProductDto,
+        image: image.filename,
+        Uploader: {
+          connect: {
+            id: userId,
+          },
+        },
+      },
+    });
+  }
+
+  async remove(productId: number) {
+    await this.db.product.delete({
+      where: {
+        id: productId,
+      },
+    });
+
+    return 'Product deleted successfully';
+  }
 }

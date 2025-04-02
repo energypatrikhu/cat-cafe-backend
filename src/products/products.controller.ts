@@ -14,6 +14,8 @@ import {
   ParseFilePipe,
   BadRequestException,
   Response,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { QueryProductDto } from './dto/query-product.dto';
@@ -82,19 +84,19 @@ export class ProductsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - Invalid input data',
+    description: 'Bad Request',
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - Invalid token',
+    description: 'Unauthorized',
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - You do not have permission to create a product',
+    description: 'Forbidden',
   })
   @ApiResponse({
     status: 409,
-    description: 'Conflict - Product already exists',
+    description: 'Conflict',
   })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
@@ -218,5 +220,133 @@ export class ProductsController {
 
     const imageStream = n_fs.createReadStream(imagePath);
     imageStream.pipe(res);
+  }
+
+  /**
+   * Update a product by id (only for workers)
+   */
+  @Patch(':id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Product ID',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product updated successfully',
+    type: Product,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found',
+  })
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth()
+  @UseInterceptors(
+    FileInterceptor('image', {
+      dest: 'uploads/products',
+      limits: {
+        fileSize: 1024 * 1024 * 32, // 32 MB
+      },
+      fileFilter: (req, file, callback) => {
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return callback(
+            new BadRequestException(
+              `Invalid file type, allowed types: ${allowedMimeTypes.join(', ')}`,
+            ),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+      storage: diskStorage({
+        destination: n_path.join(__dirname, '../../uploads/products'),
+        filename: (req, file, callback) => {
+          const uniqueFilename = n_crypto.randomUUID();
+          const extension = n_path.extname(file.originalname);
+          callback(null, `${uniqueFilename}${extension}`);
+        },
+      }),
+    }),
+  )
+  async update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateProductDto: CreateProductDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: new RegExp(allowedMimeTypes.join('|')),
+          }),
+        ],
+      }),
+    )
+    image: Express.Multer.File,
+  ) {
+    const userRole = req.user.role as 'USER' | 'WORKER';
+
+    if (userRole !== 'WORKER') {
+      throw new ForbiddenException(
+        "You don't have permission to update a product",
+      );
+    }
+
+    const userId = req.user.id;
+
+    return this.productsService.update(+id, updateProductDto, image, userId);
+  }
+
+  /**
+   * Delete a product by id (only for workers)
+   */
+  @Delete(':id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Product ID',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product deleted successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found',
+  })
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth()
+  async remove(@Request() req, @Param('id') id: string) {
+    const userRole = req.user.role as 'USER' | 'WORKER';
+
+    if (userRole !== 'WORKER') {
+      throw new ForbiddenException(
+        "You don't have permission to delete a product",
+      );
+    }
+
+    return this.productsService.remove(+id);
   }
 }
