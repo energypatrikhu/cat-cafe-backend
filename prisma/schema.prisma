@@ -25,6 +25,7 @@ model User {
 
   Token       Token[]
   Reservation Reservation? @relation("UserReservation")
+  Products    Product[]
 }
 
 enum Role {
@@ -60,6 +61,9 @@ model Product {
   name        String
   description String
   price       Float
-  url         String
+  image       String
   quantity    Int    @default(0)
+
+  uploaderId Int
+  Uploader   User @relation(fields: [uploaderId], references: [id])
 }
