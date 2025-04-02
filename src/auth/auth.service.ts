@@ -1,15 +1,44 @@
+import { PrismaService } from '../prisma.service';
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import type { LoginAuthDto } from './dto/login-auth.dto';
-import { verify } from 'argon2';
-import type { LogoutAuthDto } from './dto/logout-auth.dto';
+import * as n_crypto from 'node:crypto';
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UsersService) {}
+  constructor(private db: PrismaService) {}
+
+  async findByToken(token: string) {
+    const user = await this.db.token.findUnique({
+      where: { token },
+      select: { User: true },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return user.User;
+  }
+
+  async findByEmail(email: string) {
+    return this.db.user.findUnique({ where: { email } });
+  }
+
+  async createToken(userId: number) {
+    const token = n_crypto.randomBytes(64).toString('hex');
+
+    const dbToken = await this.db.token.create({
+      data: { token, userId },
+    });
+
+    return dbToken.token;
+  }
+
+  async deleteToken(token: string) {
+    return this.db.token.delete({ where: { token } });
+  }
 
   async validateToken(token: string) {
-    const user = await this.userService.findByToken(token);
+    const user = await this.findByToken(token);
 
     if (user) {
       delete user.password;
@@ -18,27 +47,5 @@ export class AuthService {
     }
 
     return null;
-  }
-
-  async login(createAuthDto: LoginAuthDto) {
-    const user = await this.userService.findByEmail(createAuthDto.email);
-
-    if (!user) {
-      return null;
-    }
-
-    const isValid = await verify(user.password, createAuthDto.password);
-
-    if (!isValid) {
-      return null;
-    }
-
-    const token = await this.userService.createToken(user.id);
-
-    return { token };
-  }
-
-  async logout(destroyAuthDto: LogoutAuthDto) {
-    return this.userService.deleteToken(destroyAuthDto.token);
   }
 }

@@ -1,47 +1,22 @@
+import { AuthService } from '../auth/auth.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
-import { randomBytes } from 'node:crypto';
-import type { RegisterUserDto } from './dto/create-user.dto';
 import { hash } from 'argon2';
+import { LoginUserDto } from './dto/login-user.dto';
+import { LogoutUserDto } from './dto/logout-user.dto';
+import { PrismaService } from '../prisma.service';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { verify } from 'argon2';
 
 @Injectable()
 export class UsersService {
-  constructor(private db: PrismaService) {}
+  constructor(
+    private authService: AuthService,
+    private db: PrismaService,
+  ) {}
 
-  async findByToken(token: string) {
-    const user = await this.db.token.findUnique({
-      where: { token },
-      select: { User: true },
-    });
-
-    if (!user) {
-      return null;
-    }
-
-    return user.User;
-  }
-
-  async findByEmail(email: string) {
-    return this.db.user.findUnique({ where: { email } });
-  }
-
-  async createToken(userId: number) {
-    const token = randomBytes(64).toString('hex');
-
-    const dbToken = await this.db.token.create({
-      data: { token, userId },
-    });
-
-    return dbToken.token;
-  }
-
-  async deleteToken(token: string) {
-    return this.db.token.delete({ where: { token } });
-  }
-
-  async register(createUserDto: RegisterUserDto) {
+  async register(registerUserDto: RegisterUserDto) {
     const checkUser = await this.db.user.findUnique({
-      where: { email: createUserDto.email },
+      where: { email: registerUserDto.email },
     });
 
     if (checkUser) {
@@ -50,13 +25,35 @@ export class UsersService {
 
     await this.db.user.create({
       data: {
-        name: createUserDto.name,
-        email: createUserDto.email,
-        password: await hash(createUserDto.password),
+        name: registerUserDto.name,
+        email: registerUserDto.email,
+        password: await hash(registerUserDto.password),
       },
     });
 
     return 'User created';
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.authService.findByEmail(loginUserDto.email);
+
+    if (!user) {
+      return null;
+    }
+
+    const isValid = await verify(user.password, loginUserDto.password);
+
+    if (!isValid) {
+      return null;
+    }
+
+    const token = await this.authService.createToken(user.id);
+
+    return { token };
+  }
+
+  logout(logoutUserDto: LogoutUserDto) {
+    return this.authService.deleteToken(logoutUserDto.token);
   }
 
   getMe(userId: number) {

@@ -5,12 +5,15 @@ import {
   Request,
   Get,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { RegisterUserDto } from './dto/create-user.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { ApiBearerAuth, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { BearerAuthGuard } from '../auth/auth.guard';
+import { LoginUserDto } from './dto/login-user.dto';
+import { LogoutUserDto } from './dto/logout-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -44,6 +47,69 @@ export class UsersController {
   })
   register(@Body() createUserDto: RegisterUserDto) {
     return this.usersService.register(createUserDto);
+  }
+
+  /**
+   * Login a user by validating their credentials.
+   */
+  @Post('login')
+  @ApiBody({
+    type: LoginUserDto,
+    examples: {
+      user: {
+        value: {
+          email: 'someone@example.com',
+          password: '@V3Ri$tr0ngP@$$w0rd',
+        },
+      },
+      worker: {
+        value: {
+          email: 'worker@cat-cafe.hu',
+          password: 'worker-pass-123',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Login successful',
+    example: {
+      token:
+        'otv6b4rotb84rv6ot86br3t82r6bo32rtv8bo632b5tv8o62t6b8o57ot86wagzku',
+    },
+  })
+  login(@Body() body: LoginUserDto) {
+    return this.usersService.login(body);
+  }
+
+  /**
+   * Logout a user by deleting their token.
+   */
+  @Delete('logout')
+  @ApiBody({
+    type: LogoutUserDto,
+    examples: {
+      user: {
+        value: {
+          token:
+            'otv6b4rotb84rv6ot86br3t82r6bo32rtv8bo632b5tv8o62t6b8o57ot86wagzku',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Logout successful',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth()
+  async logout(@Body() body: LogoutUserDto) {
+    await this.usersService.logout(body);
+    return 'Logout successful';
   }
 
   /**

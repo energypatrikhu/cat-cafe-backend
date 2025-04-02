@@ -1,8 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import type { QueryProductDto } from './dto/query-product.dto';
+import { QueryProductDto } from './dto/query-product.dto';
 import { CreateProductDto } from './dto/create-product.dto';
-// import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -96,12 +95,4 @@ export class ProductsService {
       },
     });
   }
-
-  // update(id: number, updateProductDto: UpdateProductDto) {
-  //   return `This action updates a #${id} product`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} product`;
-  // }
 }
