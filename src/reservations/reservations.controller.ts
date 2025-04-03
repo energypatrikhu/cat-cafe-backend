@@ -1,21 +1,21 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Param,
-  UseGuards,
-  Request,
-  Patch,
-  ForbiddenException,
+  Controller,
   Delete,
+  ForbiddenException,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { ReservationsService } from './reservations.service';
-import { CreateReservationDto } from './dto/create-reservation.dto';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { BearerAuthGuard } from '../auth/auth.guard';
-import { Reservation } from './entities/reservation.entity';
+import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
+import { Reservation } from './entities/reservation.entity';
+import { ReservationsService } from './reservations.service';
 
 @Controller('reservations')
 @UseGuards(BearerAuthGuard)

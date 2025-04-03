@@ -1,11 +1,10 @@
-import { AuthService } from '../auth/auth.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { hash } from 'argon2';
+import { hash, verify } from 'argon2';
+import { AuthService } from '../auth/auth.service';
+import { PrismaService } from '../prisma.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { LogoutUserDto } from './dto/logout-user.dto';
-import { PrismaService } from '../prisma.service';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { verify } from 'argon2';
 
 @Injectable()
 export class UsersService {

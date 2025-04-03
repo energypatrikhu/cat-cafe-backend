@@ -1,6 +1,6 @@
-import { PrismaService } from '../prisma.service';
 import { Injectable } from '@nestjs/common';
 import * as n_crypto from 'node:crypto';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class AuthService {

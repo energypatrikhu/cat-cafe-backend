@@ -1,19 +1,19 @@
 import {
-  Controller,
-  Post,
   Body,
-  Request,
-  Get,
-  UseGuards,
+  Controller,
   Delete,
+  Get,
+  Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { RegisterUserDto } from './dto/register-user.dto';
 import { ApiBearerAuth, ApiBody, ApiResponse } from '@nestjs/swagger';
-import { User } from './entities/user.entity';
 import { BearerAuthGuard } from '../auth/auth.guard';
 import { LoginUserDto } from './dto/login-user.dto';
 import { LogoutUserDto } from './dto/logout-user.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { User } from './entities/user.entity';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {

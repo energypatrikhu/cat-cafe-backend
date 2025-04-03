@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  ForbiddenException,
+  Get,
+  Param,
+  Patch,
+  Post,
   Request,
   UseGuards,
-  ForbiddenException,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { BearerAuthGuard } from '../auth/auth.guard';
 import { BlogService } from './blog.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { BearerAuthGuard } from '../auth/auth.guard';
 import { BlogPost } from './entities/blog.entity';
 
 @Controller('blog')

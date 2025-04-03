@@ -1,24 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
+  Controller,
+  Delete,
+  FileTypeValidator,
+  ForbiddenException,
+  Get,
   Param,
+  ParseFilePipe,
+  Patch,
+  Post,
   Query,
+  Request,
+  Response,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
-  Request,
-  ForbiddenException,
-  FileTypeValidator,
-  ParseFilePipe,
-  BadRequestException,
-  Response,
-  Patch,
-  Delete,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
-import { QueryProductDto } from './dto/query-product.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -27,14 +26,15 @@ import {
   ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
-import { Product } from './entities/product.entity';
-import { BearerAuthGuard } from '../auth/auth.guard';
-import { CreateProductDto } from './dto/create-product.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as n_crypto from 'node:crypto';
 import * as n_path from 'node:path';
+import { BearerAuthGuard } from '../auth/auth.guard';
+import { CreateProductDto } from './dto/create-product.dto';
+import { QueryProductDto } from './dto/query-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Product } from './entities/product.entity';
+import { ProductsService } from './products.service';
 
 const allowedMimeTypes = ['image/jpeg', 'image/webp', 'image/png', 'image/gif'];
 
