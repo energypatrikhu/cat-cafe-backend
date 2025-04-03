@@ -14,27 +14,38 @@ import * as n_path from 'node:path';
 export class ProductsService {
   constructor(private db: PrismaService) {}
 
-  async create(createProductDto: CreateProductDto, image: Express.Multer.File) {
-    const product = await this.db.product.findUnique({
-      where: {
-        name: createProductDto.name,
-      },
-    });
-    if (product) {
-      throw new ConflictException(
-        `Product with name ${createProductDto.name} already exists`,
-      );
+  async checkExistingProduct(id: number | null, name: string | null) {
+    if (id) {
+      const checkProductById = await this.db.product.findUnique({
+        where: { id },
+      });
+      if (!checkProductById) {
+        throw new NotFoundException('Product not found');
+      }
     }
 
-    const newProduct = await this.db.product.create({
+    if (name) {
+      const checkProductByName = await this.db.product.findUnique({
+        where: { name },
+      });
+      if (checkProductByName && checkProductByName.id !== id) {
+        throw new ConflictException('Name already exists');
+      }
+    }
+  }
+
+  async create(createProductDto: CreateProductDto, image: Express.Multer.File) {
+    await this.checkExistingProduct(null, createProductDto.name);
+
+    const product = await this.db.product.create({
       data: {
         ...createProductDto,
         image: image.filename,
       },
     });
 
-    delete newProduct.image;
-    return newProduct;
+    delete product.image;
+    return product;
   }
 
   findAll(query: QueryProductDto) {
@@ -85,14 +96,7 @@ export class ProductsService {
   }
 
   async findOne(id: number) {
-    const product = await this.db.product.findUnique({
-      where: {
-        id,
-      },
-    });
-    if (!product) {
-      throw new NotFoundException(`Product with id ${id} does not exist`);
-    }
+    await this.checkExistingProduct(id, null);
 
     return this.db.product.findUnique({
       where: {
@@ -106,27 +110,7 @@ export class ProductsService {
     updateProductDto: UpdateProductDto,
     image: Express.Multer.File,
   ) {
-    const product = await this.db.product.findUnique({
-      where: {
-        id: productId,
-      },
-    });
-    if (!product) {
-      throw new NotFoundException(
-        `Product with id ${productId} does not exist`,
-      );
-    }
-
-    const productNameExists = await this.db.product.findUnique({
-      where: {
-        name: updateProductDto.name,
-      },
-    });
-    if (productNameExists && productNameExists.id !== productId) {
-      throw new ConflictException(
-        `Product with name ${updateProductDto.name} already exists`,
-      );
-    }
+    await this.checkExistingProduct(productId, updateProductDto.name);
 
     let newData: Record<string, string | number> = {};
     if (updateProductDto.name) {
@@ -154,19 +138,18 @@ export class ProductsService {
   }
 
   async getImage(productId: number, res: any) {
-    const product = await this.db.product.findUnique({
+    await this.checkExistingProduct(productId, null);
+
+    const productById = await this.db.product.findUnique({
       where: {
         id: productId,
       },
     });
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
 
     const imagePath = n_path.join(
       __dirname,
       '../../uploads/products',
-      product.image,
+      productById.image,
     );
 
     if (!n_fs.existsSync(imagePath)) {
@@ -178,16 +161,7 @@ export class ProductsService {
   }
 
   async remove(productId: number) {
-    const product = await this.db.product.findUnique({
-      where: {
-        id: productId,
-      },
-    });
-    if (!product) {
-      throw new NotFoundException(
-        `Product with id ${productId} does not exist`,
-      );
-    }
+    await this.checkExistingProduct(productId, null);
 
     await this.db.product.delete({
       where: {
