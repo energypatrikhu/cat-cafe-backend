@@ -11,15 +11,25 @@ import { PrismaService } from '../prisma.service';
 export class BlogService {
   constructor(private db: PrismaService) {}
 
-  async create(createBlogDto: CreatePostDto) {
-    const post = await this.db.blog.findUnique({
-      where: {
-        title: createBlogDto.title,
-      },
-    });
-    if (post) {
+  async checkExistingPost(id: number | null, title: string | null) {
+    if (id) {
+      const checkPostById = await this.db.blog.findUnique({ where: { id } });
+      if (!checkPostById) {
+        throw new NotFoundException('Post not found');
+      }
+    }
+
+    if (!title) {
+      throw new ConflictException('Title is required');
+    }
+    const checkPostByTitle = await this.db.blog.findFirst({ where: { title } });
+    if (checkPostByTitle && checkPostByTitle.id !== id) {
       throw new ConflictException('Title already exists');
     }
+  }
+
+  async create(createBlogDto: CreatePostDto) {
+    await this.checkExistingPost(null, createBlogDto.title);
 
     return this.db.blog.create({
       data: createBlogDto,
@@ -31,10 +41,7 @@ export class BlogService {
   }
 
   async findOne(id: number) {
-    const post = await this.db.blog.findUnique({ where: { id } });
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
+    await this.checkExistingPost(id, null);
 
     return this.db.blog.findUnique({
       where: {
@@ -44,19 +51,7 @@ export class BlogService {
   }
 
   async update(id: number, updateBlogDto: UpdatePostDto) {
-    const post = await this.db.blog.findUnique({ where: { id } });
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
-
-    const existingPost = await this.db.blog.findFirst({
-      where: {
-        title: updateBlogDto.title,
-      },
-    });
-    if (existingPost && existingPost.id !== id) {
-      throw new ConflictException('Title already exists');
-    }
+    await this.checkExistingPost(id, updateBlogDto.title);
 
     return this.db.blog.update({
       where: {
@@ -67,10 +62,7 @@ export class BlogService {
   }
 
   async remove(id: number) {
-    const post = await this.db.blog.findUnique({ where: { id } });
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
+    await this.checkExistingPost(id, null);
 
     this.db.blog.delete({
       where: {
