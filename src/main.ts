@@ -1,11 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-async function bootstrap() {
+(async () => {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors({
@@ -24,10 +23,6 @@ async function bootstrap() {
     }),
   );
 
-  app.useStaticAssets(join(__dirname, '..', 'public'));
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  app.setViewEngine('ejs');
-
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Cat Coffee Webshop API')
     .setDescription('Ez az api-ja a cat coffee webshopnak')
@@ -38,5 +33,4 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, documentFactory);
 
   await app.listen(3000);
-}
-bootstrap();
+})();
