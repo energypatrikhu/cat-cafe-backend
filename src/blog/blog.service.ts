@@ -19,12 +19,13 @@ export class BlogService {
       }
     }
 
-    if (!title) {
-      throw new ConflictException('Title is required');
-    }
-    const checkPostByTitle = await this.db.blog.findFirst({ where: { title } });
-    if (checkPostByTitle && checkPostByTitle.id !== id) {
-      throw new ConflictException('Title already exists');
+    if (title) {
+      const checkPostByTitle = await this.db.blog.findUnique({
+        where: { title },
+      });
+      if (checkPostByTitle && checkPostByTitle.id !== id) {
+        throw new ConflictException('Title already exists');
+      }
     }
   }
 
