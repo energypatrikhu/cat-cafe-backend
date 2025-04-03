@@ -18,7 +18,18 @@ async function seed_products() {
   }
 }
 
-async function seed_worker_user() {
+async function seed_blog_posts() {
+  for (let i = 0; i < 10; i++) {
+    await prisma.blog.create({
+      data: {
+        title: faker.lorem.words(5),
+        content: faker.lorem.paragraphs(3),
+      },
+    });
+  }
+}
+
+async function seed_users() {
   if (
     !(await prisma.user.findFirst({ where: { email: 'worker@cat-cafe.hu' } }))
   ) {
@@ -31,14 +42,28 @@ async function seed_worker_user() {
       },
     });
   }
+
+  if (
+    !(await prisma.user.findFirst({ where: { email: 'user@cat-cafe.hu' } }))
+  ) {
+    await prisma.user.create({
+      data: {
+        name: 'User Pista',
+        email: 'user@cat-cafe.hu',
+        password: await hash('user-pass-123'),
+        role: 'USER',
+      },
+    });
+  }
 }
 
 (async () => {
   try {
     await prisma.$connect();
 
-    await seed_worker_user();
+    await seed_users();
     await seed_products();
+    await seed_blog_posts();
   } catch (error) {
     console.error(error);
   } finally {
