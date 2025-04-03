@@ -16,8 +16,8 @@ export class ProductsService {
 
   /**
    * Check if a product exists by id or name.
-   * Throw NotFoundException if not found by id.
-   * Throw ConflictException if found by name.
+   * @throws {NotFoundException} if not found by id.
+   * @throws {ConflictException} if found by name.
    */
   async checkForExistingProduct(id: number | null, name: string | null) {
     if (id) {

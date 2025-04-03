@@ -13,8 +13,8 @@ export class BlogService {
 
   /**
    * Check if a post exists by id or title.
-   * Throw NotFoundException if not found by id.
-   * Throw ConflictException if found by name.
+   * @throws {NotFoundException} if not found by id.
+   * @throws {ConflictException} if found by name.
    */
   async checkForExistingPost(id: number | null, title: string | null) {
     if (id) {
