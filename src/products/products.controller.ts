@@ -32,7 +32,6 @@ import { BearerAuthGuard } from '../auth/auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import * as n_fs from 'node:fs';
 import * as n_crypto from 'node:crypto';
 import * as n_path from 'node:path';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -201,24 +200,7 @@ export class ProductsController {
     type: 'file',
   })
   async getImage(@Param('id') id: string, @Response() res) {
-    const product = await this.productsService.findOne(+id);
-
-    if (!product) {
-      throw new BadRequestException('Product not found');
-    }
-
-    const imagePath = n_path.join(
-      __dirname,
-      '../../uploads/products',
-      product.image,
-    );
-
-    if (!n_fs.existsSync(imagePath)) {
-      throw new BadRequestException('Image not found');
-    }
-
-    const imageStream = n_fs.createReadStream(imagePath);
-    imageStream.pipe(res);
+    return this.productsService.getImage(+id, res);
   }
 
   /**

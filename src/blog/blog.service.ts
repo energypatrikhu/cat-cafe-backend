@@ -12,12 +12,12 @@ export class BlogService {
   constructor(private db: PrismaService) {}
 
   async create(createBlogDto: CreatePostDto) {
-    const existingPost = await this.db.blog.findFirst({
+    const post = await this.db.blog.findUnique({
       where: {
         title: createBlogDto.title,
       },
     });
-    if (existingPost) {
+    if (post) {
       throw new ConflictException('Title already exists');
     }
 

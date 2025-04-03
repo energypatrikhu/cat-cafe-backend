@@ -42,7 +42,7 @@ model Token {
 
 model Blog {
   id        Int      @id @default(autoincrement())
-  title     String
+  title     String   @unique
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -59,7 +59,7 @@ model Reservation {
 
 model Product {
   id          Int    @id @default(autoincrement())
-  name        String
+  name        String @unique
   description String
   price       Float
   image       String

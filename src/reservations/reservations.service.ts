@@ -19,14 +19,13 @@ export class ReservationsService {
       throw new BadRequestException('Invalid date');
     }
 
-    const checkPreviousReservation = await this.db.reservation.findFirst({
+    const previousReservation = await this.db.reservation.findUnique({
       where: {
         active: true,
         userId,
       },
     });
-
-    if (checkPreviousReservation) {
+    if (previousReservation) {
       throw new ForbiddenException('You already have a reservation');
     }
 
@@ -70,18 +69,6 @@ export class ReservationsService {
     });
     if (!reservation) {
       throw new NotFoundException('Reservation not found');
-    }
-
-    const existingReservation = await this.db.reservation.findFirst({
-      where: {
-        id: reservationId,
-        date: updateReservationDto.date,
-      },
-    });
-    if (existingReservation) {
-      throw new ConflictException(
-        'There is already a reservation for this date',
-      );
     }
 
     return this.db.reservation.update({

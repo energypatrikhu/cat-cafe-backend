@@ -7,33 +7,34 @@ import { PrismaService } from '../prisma.service';
 import { QueryProductDto } from './dto/query-product.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import * as n_fs from 'node:fs';
+import * as n_path from 'node:path';
 
 @Injectable()
 export class ProductsService {
   constructor(private db: PrismaService) {}
 
   async create(createProductDto: CreateProductDto, image: Express.Multer.File) {
-    const productExists = await this.db.product.findFirst({
+    const product = await this.db.product.findUnique({
       where: {
         name: createProductDto.name,
       },
     });
-
-    if (productExists) {
+    if (product) {
       throw new ConflictException(
         `Product with name ${createProductDto.name} already exists`,
       );
     }
 
-    const product = await this.db.product.create({
+    const newProduct = await this.db.product.create({
       data: {
         ...createProductDto,
         image: image.filename,
       },
     });
 
-    delete product.image;
-    return product;
+    delete newProduct.image;
+    return newProduct;
   }
 
   findAll(query: QueryProductDto) {
@@ -83,8 +84,17 @@ export class ProductsService {
     });
   }
 
-  findOne(id: number) {
-    return this.db.product.findFirstOrThrow({
+  async findOne(id: number) {
+    const product = await this.db.product.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} does not exist`);
+    }
+
+    return this.db.product.findUnique({
       where: {
         id,
       },
@@ -96,24 +106,22 @@ export class ProductsService {
     updateProductDto: UpdateProductDto,
     image: Express.Multer.File,
   ) {
-    const productExists = await this.db.product.findFirst({
+    const product = await this.db.product.findUnique({
       where: {
         id: productId,
       },
     });
-
-    if (!productExists) {
+    if (!product) {
       throw new NotFoundException(
         `Product with id ${productId} does not exist`,
       );
     }
 
-    const productNameExists = await this.db.product.findFirst({
+    const productNameExists = await this.db.product.findUnique({
       where: {
         name: updateProductDto.name,
       },
     });
-
     if (productNameExists && productNameExists.id !== productId) {
       throw new ConflictException(
         `Product with name ${updateProductDto.name} already exists`,
@@ -145,14 +153,37 @@ export class ProductsService {
     });
   }
 
-  async remove(productId: number) {
-    const productExists = await this.db.product.findFirst({
+  async getImage(productId: number, res: any) {
+    const product = await this.db.product.findUnique({
       where: {
         id: productId,
       },
     });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
 
-    if (!productExists) {
+    const imagePath = n_path.join(
+      __dirname,
+      '../../uploads/products',
+      product.image,
+    );
+
+    if (!n_fs.existsSync(imagePath)) {
+      throw new NotFoundException('Image not found');
+    }
+
+    const imageStream = n_fs.createReadStream(imagePath);
+    imageStream.pipe(res);
+  }
+
+  async remove(productId: number) {
+    const product = await this.db.product.findUnique({
+      where: {
+        id: productId,
+      },
+    });
+    if (!product) {
       throw new NotFoundException(
         `Product with id ${productId} does not exist`,
       );
