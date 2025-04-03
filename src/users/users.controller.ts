@@ -58,8 +58,8 @@ export class UsersController {
     examples: {
       user: {
         value: {
-          email: 'someone@example.com',
-          password: '@V3Ri$tr0ngP@$$w0rd',
+          email: 'user@cat-cafe.hu',
+          password: 'user-pass-123',
         },
       },
       worker: {
