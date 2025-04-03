@@ -24,7 +24,7 @@ model User {
   minigameLastPlayed DateTime?
 
   Token       Token[]
-  Reservation Reservation? @relation("UserReservation")
+  Reservation Reservation[]
 }
 
 enum Role {
@@ -53,8 +53,8 @@ model Reservation {
   date   DateTime
   active Boolean  @default(true)
 
-  userId Int  @unique
-  User   User @relation("UserReservation", fields: [userId], references: [id])
+  userId Int
+  User   User @relation(fields: [userId], references: [id])
 }
 
 model Product {
