@@ -44,7 +44,7 @@ export class ReservationsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid date',
+    description: 'Bad request',
   })
   @ApiResponse({
     status: 401,

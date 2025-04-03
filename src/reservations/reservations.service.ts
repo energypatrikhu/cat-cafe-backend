@@ -13,12 +13,6 @@ export class ReservationsService {
   constructor(private db: PrismaService) {}
 
   async create(userId: number, date: Date) {
-    const dateNow = new Date();
-
-    if (date < dateNow) {
-      throw new BadRequestException('Invalid date');
-    }
-
     const previousReservation = await this.db.reservation.findUnique({
       where: {
         active: true,

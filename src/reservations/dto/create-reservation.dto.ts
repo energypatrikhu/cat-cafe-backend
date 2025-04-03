@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDate } from 'class-validator';
+import { IsDate, MinDate } from 'class-validator';
 
 export class CreateReservationDto {
   /**
@@ -7,5 +7,6 @@ export class CreateReservationDto {
    */
   @IsDate()
   @Type(() => Date)
+  @MinDate(new Date())
   date: Date;
 }
