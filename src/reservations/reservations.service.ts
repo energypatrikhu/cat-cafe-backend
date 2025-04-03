@@ -13,7 +13,7 @@ export class ReservationsService {
   constructor(private db: PrismaService) {}
 
   async create(userId: number, date: Date) {
-    const previousReservation = await this.db.reservation.findUnique({
+    const previousReservation = await this.db.reservation.findFirst({
       where: {
         active: true,
         userId,
