@@ -11,7 +11,12 @@ import { PrismaService } from '../prisma.service';
 export class BlogService {
   constructor(private db: PrismaService) {}
 
-  async checkExistingPost(id: number | null, title: string | null) {
+  /**
+   * Check if a post exists by id or title.
+   * Throw NotFoundException if not found by id.
+   * Throw ConflictException if found by name.
+   */
+  async checkForExistingPost(id: number | null, title: string | null) {
     if (id) {
       const checkPostById = await this.db.blog.findUnique({ where: { id } });
       if (!checkPostById) {
@@ -30,7 +35,7 @@ export class BlogService {
   }
 
   async create(createBlogDto: CreatePostDto) {
-    await this.checkExistingPost(null, createBlogDto.title);
+    await this.checkForExistingPost(null, createBlogDto.title);
 
     return this.db.blog.create({
       data: createBlogDto,
@@ -42,7 +47,7 @@ export class BlogService {
   }
 
   async findOne(id: number) {
-    await this.checkExistingPost(id, null);
+    await this.checkForExistingPost(id, null);
 
     return this.db.blog.findUnique({
       where: {
@@ -52,7 +57,7 @@ export class BlogService {
   }
 
   async update(id: number, updateBlogDto: UpdatePostDto) {
-    await this.checkExistingPost(id, updateBlogDto.title);
+    await this.checkForExistingPost(id, updateBlogDto.title);
 
     return this.db.blog.update({
       where: {
@@ -63,7 +68,7 @@ export class BlogService {
   }
 
   async remove(id: number) {
-    await this.checkExistingPost(id, null);
+    await this.checkForExistingPost(id, null);
 
     this.db.blog.delete({
       where: {

@@ -14,7 +14,12 @@ import * as n_path from 'node:path';
 export class ProductsService {
   constructor(private db: PrismaService) {}
 
-  async checkExistingProduct(id: number | null, name: string | null) {
+  /**
+   * Check if a product exists by id or name.
+   * Throw NotFoundException if not found by id.
+   * Throw ConflictException if found by name.
+   */
+  async checkForExistingProduct(id: number | null, name: string | null) {
     if (id) {
       const checkProductById = await this.db.product.findUnique({
         where: { id },
@@ -35,7 +40,7 @@ export class ProductsService {
   }
 
   async create(createProductDto: CreateProductDto, image: Express.Multer.File) {
-    await this.checkExistingProduct(null, createProductDto.name);
+    await this.checkForExistingProduct(null, createProductDto.name);
 
     const product = await this.db.product.create({
       data: {
@@ -96,7 +101,7 @@ export class ProductsService {
   }
 
   async findOne(id: number) {
-    await this.checkExistingProduct(id, null);
+    await this.checkForExistingProduct(id, null);
 
     return this.db.product.findUnique({
       where: {
@@ -110,7 +115,7 @@ export class ProductsService {
     updateProductDto: UpdateProductDto,
     image: Express.Multer.File,
   ) {
-    await this.checkExistingProduct(productId, updateProductDto.name);
+    await this.checkForExistingProduct(productId, updateProductDto.name);
 
     let newData: Record<string, string | number> = {};
     if (updateProductDto.name) {
@@ -138,7 +143,7 @@ export class ProductsService {
   }
 
   async getImage(productId: number, res: any) {
-    await this.checkExistingProduct(productId, null);
+    await this.checkForExistingProduct(productId, null);
 
     const productById = await this.db.product.findUnique({
       where: {
@@ -161,7 +166,7 @@ export class ProductsService {
   }
 
   async remove(productId: number) {
-    await this.checkExistingProduct(productId, null);
+    await this.checkForExistingProduct(productId, null);
 
     await this.db.product.delete({
       where: {
