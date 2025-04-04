@@ -390,8 +390,6 @@ export class ProductsController {
     @Body()
     buyProductDto: BuyProductDto,
   ) {
-    // console.log(buyProductDto);
-    // return buyProductDto;
     return this.productsService.buy(buyProductDto);
   }
 }
