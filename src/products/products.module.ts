@@ -4,8 +4,6 @@ import { PrismaService } from '../prisma.service';
 import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
 
-// const allowedMimeTypes = ['image/jpeg', 'image/webp', 'image/png', 'image/gif'];
-
 @Module({
   controllers: [ProductsController],
   providers: [ProductsService, PrismaService],
