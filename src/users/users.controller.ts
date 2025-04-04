@@ -78,6 +78,11 @@ export class UsersController {
         'otv6b4rotb84rv6ot86br3t82r6bo32rtv8bo632b5tv8o62t6b8o57ot86wagzku',
     },
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid credentials',
+    example: 'Invalid credentials',
+  })
   login(@Body() body: LoginUserDto) {
     return this.usersService.login(body);
   }

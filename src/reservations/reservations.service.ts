@@ -28,11 +28,19 @@ export class ReservationsService {
           connect: { id: userId },
         },
       },
+      select: {
+        id: true,
+        date: true,
+        active: true,
+      },
     });
   }
 
   findAll(userId: number) {
-    return this.db.reservation.findMany({ where: { userId } });
+    return this.db.reservation.findMany({
+      where: { userId },
+      select: { id: true, date: true, active: true },
+    });
   }
 
   async findOne(userId: number, id: number) {
@@ -45,18 +53,22 @@ export class ReservationsService {
       throw new NotFoundException('Reservation not found');
     }
 
-    return reservation.Reservation;
+    delete reservation.Reservation[0].userId;
+    return reservation.Reservation[0];
   }
 
   async update(
-    userId: any,
     reservationId: number,
     updateReservationDto: UpdateReservationDto,
   ) {
+    if (!updateReservationDto.userId) {
+      throw new ForbiddenException('User ID is required');
+    }
+
     const reservation = await this.db.reservation.findFirst({
       where: {
         id: reservationId,
-        userId,
+        userId: updateReservationDto.userId,
       },
     });
     if (!reservation) {

@@ -13,9 +13,4 @@ export class Reservation {
    * Is the reservation active?
    */
   active: boolean;
-
-  /**
-   * The ID of the user who made the reservation
-   */
-  userId: number;
 }

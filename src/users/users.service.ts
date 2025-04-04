@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { hash, verify } from 'argon2';
 import { AuthService } from '../auth/auth.service';
@@ -42,7 +41,7 @@ export class UsersService {
     const user = await this.authService.findByEmail(loginUserDto.email);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new BadRequestException('Invalid credentials');
     }
 
     const isValid = await verify(user.password, loginUserDto.password);

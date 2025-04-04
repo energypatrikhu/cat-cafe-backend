@@ -40,7 +40,7 @@ export class ReservationsController {
   @ApiResponse({
     status: 201,
     description: 'Reservation created',
-    type: CreateReservationDto,
+    type: Reservation,
   })
   @ApiResponse({
     status: 400,
@@ -153,8 +153,7 @@ export class ReservationsController {
       );
     }
 
-    const userId = req.user.id;
-    return this.reservationsService.update(userId, +id, updateReservationDto);
+    return this.reservationsService.update(+id, updateReservationDto);
   }
 
   /**
@@ -170,7 +169,6 @@ export class ReservationsController {
   @ApiResponse({
     status: 200,
     description: 'Reservation deleted',
-    type: Reservation,
   })
   @ApiResponse({
     status: 401,

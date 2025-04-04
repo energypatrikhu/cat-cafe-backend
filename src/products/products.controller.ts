@@ -181,6 +181,10 @@ export class ProductsController {
     description: 'Product details',
     type: Product,
   })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
   }
@@ -363,10 +367,14 @@ export class ProductsController {
   /**
    * Buy a products by ids
    */
-  @Post('buy')
+  @Patch('buy')
   @ApiResponse({
     status: 200,
     description: 'Products bought successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request',
   })
   @ApiResponse({
     status: 401,

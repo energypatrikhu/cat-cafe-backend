@@ -1,4 +1,5 @@
 import { PartialType } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 import { CreateReservationDto } from './create-reservation.dto';
 
 export class UpdateReservationDto extends PartialType(CreateReservationDto) {
@@ -15,5 +16,6 @@ export class UpdateReservationDto extends PartialType(CreateReservationDto) {
   /**
    * The ID of the user who made the reservation
    */
+  @IsNotEmpty()
   userId: number;
 }
