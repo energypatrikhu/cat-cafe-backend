@@ -30,7 +30,7 @@ import { AppModule } from './app.module';
     .build();
   const documentFactory = () =>
     SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('', app, documentFactory);
 
   await app.listen(3000);
 })();
