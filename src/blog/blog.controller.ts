@@ -86,6 +86,10 @@ export class BlogController {
     description: 'Post retrieved successfully',
     type: BlogPost,
   })
+  @ApiResponse({
+    status: 404,
+    description: 'Post not found',
+  })
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(+id);
   }
