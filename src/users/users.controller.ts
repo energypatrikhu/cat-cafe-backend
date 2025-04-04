@@ -41,7 +41,7 @@ export class UsersController {
     example: 'User created',
   })
   @ApiResponse({
-    status: 400,
+    status: 409,
     description: 'User already exists',
     example: 'User already exists',
   })

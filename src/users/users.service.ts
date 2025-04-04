@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { hash, verify } from 'argon2';
 import { AuthService } from '../auth/auth.service';
 import { PrismaService } from '../prisma.service';
@@ -19,7 +24,7 @@ export class UsersService {
     });
 
     if (checkUser) {
-      throw new BadRequestException('User already exists');
+      throw new ConflictException('User already exists');
     }
 
     await this.db.user.create({
@@ -37,13 +42,13 @@ export class UsersService {
     const user = await this.authService.findByEmail(loginUserDto.email);
 
     if (!user) {
-      return null;
+      throw new NotFoundException('User not found');
     }
 
     const isValid = await verify(user.password, loginUserDto.password);
 
     if (!isValid) {
-      return null;
+      throw new BadRequestException('Invalid credentials');
     }
 
     const token = await this.authService.createToken(user.id);
