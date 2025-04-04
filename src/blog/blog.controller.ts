@@ -52,7 +52,7 @@ export class BlogController {
     const role = req.user.role as 'USER' | 'WORKER';
     if (role !== 'WORKER') {
       throw new ForbiddenException(
-        'You are not authorized to delete a blog post',
+        'You are not authorized to create a blog post',
       );
     }
 
@@ -134,7 +134,7 @@ export class BlogController {
     const role = req.user.role as 'USER' | 'WORKER';
     if (role !== 'WORKER') {
       throw new ForbiddenException(
-        'You are not authorized to delete a blog post',
+        'You are not authorized to update a blog post',
       );
     }
 
