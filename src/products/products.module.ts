@@ -9,7 +9,6 @@ import { ProductsService } from './products.service';
   providers: [ProductsService, PrismaService],
   imports: [
     MulterModule.register({
-      dest: 'uploads/products',
       limits: {
         fileSize: 1024 * 1024 * 32, // 32 MB
       },
