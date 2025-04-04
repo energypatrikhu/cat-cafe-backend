@@ -166,7 +166,19 @@ export class ProductsService {
     );
 
     if (!n_fs.existsSync(imagePath)) {
-      throw new NotFoundException('Image not found');
+      const notFoundImagePath = n_path.join(
+        __dirname,
+        '../../srv/images',
+        'imageNotFound.webp',
+      );
+
+      if (!n_fs.existsSync(notFoundImagePath)) {
+        throw new NotFoundException('Image not found');
+      }
+
+      const notFoundImageStream = n_fs.createReadStream(notFoundImagePath);
+      notFoundImageStream.pipe(res);
+      return;
     }
 
     const imageStream = n_fs.createReadStream(imagePath);
