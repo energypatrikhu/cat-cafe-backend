@@ -60,6 +60,6 @@ export class BlogService {
       where: { id },
     });
 
-    return { message: 'Post deleted successfully' };
+    return 'Post deleted successfully';
   }
 }

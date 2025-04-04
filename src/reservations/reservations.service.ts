@@ -85,6 +85,6 @@ export class ReservationsService {
 
     await this.db.reservation.delete({ where: { id: reservationId } });
 
-    return { message: 'Reservation deleted' };
+    return 'Reservation deleted';
   }
 }

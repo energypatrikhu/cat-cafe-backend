@@ -92,7 +92,7 @@ export class UsersController {
   @ApiBearerAuth()
   async logout(@Body() body: LogoutUserDto) {
     await this.usersService.logout(body);
-    return { message: 'Logout successful' };
+    return 'Logout successful';
   }
 
   /**
