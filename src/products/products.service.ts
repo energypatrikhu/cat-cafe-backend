@@ -6,6 +6,7 @@ import {
 import * as n_fs from 'node:fs';
 import * as n_path from 'node:path';
 import { PrismaService } from '../prisma.service';
+import type { BuyProductDto } from './dto/buy-product.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -175,5 +176,41 @@ export class ProductsService {
     });
 
     return 'Product deleted successfully';
+  }
+
+  async buy(buyProductDto: BuyProductDto[]) {
+    const products = await this.db.product.findMany({
+      where: {
+        id: {
+          in: buyProductDto.map((product) => product.id),
+        },
+      },
+    });
+
+    const updatedProducts = products.map((product) => {
+      const quantity = buyProductDto.find((p) => p.id === product.id).quantity;
+
+      if (product.quantity < quantity) {
+        throw new NotFoundException(
+          `Not enough quantity for product ${product.name}`,
+        );
+      }
+
+      return {
+        ...product,
+        quantity: product.quantity - quantity,
+      };
+    });
+
+    await this.db.product.updateMany({
+      where: {
+        id: {
+          in: updatedProducts.map((product) => product.id),
+        },
+      },
+      data: updatedProducts,
+    });
+
+    return 'Products bought successfully';
   }
 }

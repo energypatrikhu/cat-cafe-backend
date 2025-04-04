@@ -30,6 +30,7 @@ import { diskStorage } from 'multer';
 import * as n_crypto from 'node:crypto';
 import * as n_path from 'node:path';
 import { BearerAuthGuard } from '../auth/auth.guard';
+import { BuyProductDto } from './dto/buy-product.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -357,5 +358,38 @@ export class ProductsController {
     }
 
     return this.productsService.remove(+id);
+  }
+
+  /**
+   * Buy a products by ids
+   */
+  @Post('buy')
+  @ApiResponse({
+    status: 200,
+    description: 'Products bought successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found',
+  })
+  @ApiBody({
+    description: 'Products to buy',
+    type: [BuyProductDto],
+  })
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth()
+  buy(
+    @Body('products')
+    products: BuyProductDto[],
+  ) {
+    return this.productsService.buy(products);
   }
 }
