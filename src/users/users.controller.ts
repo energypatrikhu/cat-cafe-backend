@@ -20,7 +20,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   /**
-   * Register a new user.
+   * Register a new user
    */
   @Post('register')
   @ApiBody({
@@ -35,22 +35,14 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({
-    status: 201,
-    description: 'User created',
-    example: 'User created',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'User already exists',
-    example: 'User already exists',
-  })
+  @ApiResponse({ status: 201, description: 'User created' })
+  @ApiResponse({ status: 409, description: 'User already exists' })
   register(@Body() createUserDto: RegisterUserDto) {
     return this.usersService.register(createUserDto);
   }
 
   /**
-   * Login a user by validating their credentials.
+   * Login a user
    */
   @Post('login')
   @ApiBody({
@@ -73,22 +65,15 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'Login successful',
-    example: {
-      token:
-        'otv6b4rotb84rv6ot86br3t82r6bo32rtv8bo632b5tv8o62t6b8o57ot86wagzku',
-    },
+    example: { token: 'example-token' },
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid credentials',
-    example: 'Invalid credentials',
-  })
+  @ApiResponse({ status: 400, description: 'Invalid credentials' })
   login(@Body() body: LoginUserDto) {
     return this.usersService.login(body);
   }
 
   /**
-   * Logout a user by deleting their token.
+   * Logout a user
    */
   @Delete('logout')
   @ApiBody({
@@ -96,44 +81,29 @@ export class UsersController {
     examples: {
       user: {
         value: {
-          token:
-            'otv6b4rotb84rv6ot86br3t82r6bo32rtv8bo632b5tv8o62t6b8o57ot86wagzku',
+          token: 'example-token',
         },
       },
     },
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Logout successful',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
   async logout(@Body() body: LogoutUserDto) {
     await this.usersService.logout(body);
-    return 'Logout successful';
+    return { message: 'Logout successful' };
   }
 
   /**
-   * Get own user information.
+   * Get user information
    */
   @Get('me')
-  @ApiResponse({
-    status: 200,
-    description: 'User information',
-    type: User,
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 200, description: 'User information', type: User })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
   getMe(@Request() req) {
-    const userId = req.user.id;
-    return this.usersService.getMe(userId);
+    return this.usersService.getMe(req.user.id);
   }
 }

@@ -23,6 +23,14 @@ import { ReservationsService } from './reservations.service';
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
+  private validateWorkerRole(userRole: 'USER' | 'WORKER') {
+    if (userRole !== 'WORKER') {
+      throw new ForbiddenException(
+        "You don't have permission to perform this action",
+      );
+    }
+  }
+
   /**
    * Create a new reservation
    */
@@ -42,23 +50,15 @@ export class ReservationsController {
     description: 'Reservation created',
     type: Reservation,
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad request',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'User already has a reservation',
+    description: 'User already has an active reservation',
   })
   create(@Request() req, @Body() createReservationDto: CreateReservationDto) {
+    const { id: userId } = req.user;
     const date = new Date(createReservationDto.date);
-
-    const userId = req.user.id;
-
     return this.reservationsService.create(userId, date);
   }
 
@@ -71,13 +71,9 @@ export class ReservationsController {
     description: 'User reservations',
     type: [Reservation],
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(@Request() req) {
-    const userId = req.user.id;
-
+    const { id: userId } = req.user;
     return this.reservationsService.findAll(userId);
   }
 
@@ -96,17 +92,10 @@ export class ReservationsController {
     description: 'Reservation details',
     type: Reservation,
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Reservation not found',
-  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Reservation not found' })
   findOne(@Request() req, @Param('id') id: string) {
-    const userId = req.user.id;
-
+    const { id: userId } = req.user;
     return this.reservationsService.findOne(userId, +id);
   }
 
@@ -125,34 +114,18 @@ export class ReservationsController {
     description: 'Reservation updated',
     type: Reservation,
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Reservation not found',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict',
-  })
+  @ApiResponse({ status: 404, description: 'Reservation not found' })
   update(
     @Request() req,
     @Param('id') id: string,
     @Body() updateReservationDto: UpdateReservationDto,
   ) {
-    const role = req.user.role as 'USER' | 'WORKER';
-    if (role !== 'WORKER') {
-      throw new ForbiddenException(
-        "You don't have permission to update a reservation",
-      );
-    }
-
+    this.validateWorkerRole(req.user.role);
     return this.reservationsService.update(+id, updateReservationDto);
   }
 
@@ -166,34 +139,15 @@ export class ReservationsController {
     description: 'Reservation ID',
     type: Number,
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Reservation deleted',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 200, description: 'Reservation deleted' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Reservation not found',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict',
-  })
+  @ApiResponse({ status: 404, description: 'Reservation not found' })
   remove(@Request() req, @Param('id') id: string) {
-    const role = req.user.role as 'USER' | 'WORKER';
-    if (role !== 'WORKER') {
-      throw new ForbiddenException(
-        "You don't have permission to delete a reservation",
-      );
-    }
-
+    this.validateWorkerRole(req.user.role);
     return this.reservationsService.remove(+id);
   }
 }

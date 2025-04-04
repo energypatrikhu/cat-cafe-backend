@@ -21,6 +21,14 @@ import { BlogPost } from './entities/blog.entity';
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
+  private validateWorkerRole(userRole: 'USER' | 'WORKER') {
+    if (userRole !== 'WORKER') {
+      throw new ForbiddenException(
+        "You don't have permission to perform this action",
+      );
+    }
+  }
+
   /**
    * Create a new blog post (only for workers)
    */
@@ -32,30 +40,15 @@ export class BlogController {
     description: 'Post created successfully',
     type: BlogPost,
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict',
-  })
+  @ApiResponse({ status: 409, description: 'Title already exists' })
   create(@Request() req, @Body() createBlogDto: CreatePostDto) {
-    const role = req.user.role as 'USER' | 'WORKER';
-    if (role !== 'WORKER') {
-      throw new ForbiddenException(
-        'You are not authorized to create a blog post',
-      );
-    }
-
+    this.validateWorkerRole(req);
     return this.blogService.create(createBlogDto);
   }
 
@@ -86,10 +79,7 @@ export class BlogController {
     description: 'Post retrieved successfully',
     type: BlogPost,
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Post not found',
-  })
+  @ApiResponse({ status: 404, description: 'Post not found' })
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(+id);
   }
@@ -110,43 +100,25 @@ export class BlogController {
     description: 'Post updated successfully',
     type: BlogPost,
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Post not found',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict',
-  })
+  @ApiResponse({ status: 404, description: 'Post not found' })
+  @ApiResponse({ status: 409, description: 'Title already exists' })
   update(
     @Request() req,
     @Param('id') id: string,
     @Body() updateBlogDto: UpdatePostDto,
   ) {
-    const role = req.user.role as 'USER' | 'WORKER';
-    if (role !== 'WORKER') {
-      throw new ForbiddenException(
-        'You are not authorized to update a blog post',
-      );
-    }
-
+    this.validateWorkerRole(req);
     return this.blogService.update(+id, updateBlogDto);
   }
 
   /**
-   * Update a blog post (only for workers)
+   * Delete a blog post (only for workers)
    */
   @Delete('posts/:id')
   @UseGuards(BearerAuthGuard)
@@ -156,30 +128,15 @@ export class BlogController {
     description: 'The ID of the blog post to delete',
     type: Number,
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Post deleted successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 200, description: 'Post deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Post not found',
-  })
+  @ApiResponse({ status: 404, description: 'Post not found' })
   remove(@Request() req, @Param('id') id: string) {
-    const role = req.user.role as 'USER' | 'WORKER';
-    if (role !== 'WORKER') {
-      throw new ForbiddenException(
-        'You are not authorized to delete a blog post',
-      );
-    }
-
+    this.validateWorkerRole(req);
     return this.blogService.remove(+id);
   }
 }

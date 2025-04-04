@@ -1,48 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import * as n_crypto from 'node:crypto';
+import * as crypto from 'node:crypto';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private db: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async findByToken(token: string) {
-    const user = await this.db.token.findUnique({
+  async findUserByToken(token: string) {
+    const tokenRecord = await this.prisma.token.findUnique({
       where: { token },
       select: { User: true },
     });
 
-    if (!user) {
-      return null;
-    }
-
-    return user.User;
+    return tokenRecord?.User || null;
   }
 
-  async findByEmail(email: string) {
-    return this.db.user.findUnique({ where: { email } });
+  async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async createToken(userId: number) {
-    const token = n_crypto.randomBytes(64).toString('hex');
+  async generateToken(userId: number) {
+    const token = crypto.randomBytes(64).toString('hex');
 
-    const dbToken = await this.db.token.create({
+    const createdToken = await this.prisma.token.create({
       data: { token, userId },
     });
 
-    return dbToken.token;
+    return createdToken.token;
   }
 
-  async deleteToken(token: string) {
-    return this.db.token.delete({ where: { token } });
+  async removeToken(token: string) {
+    return this.prisma.token.delete({ where: { token } });
   }
 
   async validateToken(token: string) {
-    const user = await this.findByToken(token);
+    const user = await this.findUserByToken(token);
 
     if (user) {
       delete user.password;
-
       return user;
     }
 

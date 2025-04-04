@@ -41,22 +41,21 @@ import { ProductsService } from './products.service';
 const allowedMimeTypes = ['image/jpeg', 'image/webp', 'image/png', 'image/gif'];
 const multerOptions: MulterOptions = {
   fileFilter: (_req, file, callback) => {
-    if (!allowedMimeTypes.includes(file.mimetype)) {
-      return callback(
-        new BadRequestException(
-          `Invalid file type, allowed types: ${allowedMimeTypes.join(', ')}`,
-        ),
-        false,
-      );
-    }
-    callback(null, true);
+    const isValid = allowedMimeTypes.includes(file.mimetype);
+    callback(
+      isValid
+        ? null
+        : new BadRequestException(
+            `Invalid file type, allowed types: ${allowedMimeTypes.join(', ')}`,
+          ),
+      isValid,
+    );
   },
   storage: diskStorage({
     destination: n_path.join(__dirname, '../../uploads/products'),
     filename: (_req, file, callback) => {
-      const uniqueFilename = n_crypto.randomUUID();
-      const extension = n_path.extname(file.originalname);
-      callback(null, `${uniqueFilename}${extension}`);
+      const uniqueFilename = `${n_crypto.randomUUID()}${n_path.extname(file.originalname)}`;
+      callback(null, uniqueFilename);
     },
   }),
 };
@@ -65,6 +64,14 @@ const multerOptions: MulterOptions = {
 @ApiExtraModels(QueryProductDto)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+  private validateWorkerRole(userRole: 'USER' | 'WORKER') {
+    if (userRole !== 'WORKER') {
+      throw new ForbiddenException(
+        "You don't have permission to perform this action",
+      );
+    }
+  }
 
   /**
    * Create a new product (only for workers)
@@ -76,22 +83,10 @@ export class ProductsController {
     schema: {
       type: 'object',
       properties: {
-        name: {
-          type: 'string',
-          description: 'Product name',
-        },
-        description: {
-          type: 'string',
-          description: 'Product description',
-        },
-        price: {
-          type: 'number',
-          description: 'Product price',
-        },
-        quantity: {
-          type: 'number',
-          description: 'Product quantity',
-        },
+        name: { type: 'string', description: 'Product name' },
+        description: { type: 'string', description: 'Product description' },
+        price: { type: 'number', description: 'Product price' },
+        quantity: { type: 'number', description: 'Product quantity' },
         image: {
           type: 'string',
           format: 'binary',
@@ -105,22 +100,13 @@ export class ProductsController {
     description: 'Product created successfully',
     type: Product,
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict',
-  })
+  @ApiResponse({ status: 409, description: 'Name already exists' })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('image', multerOptions))
@@ -138,19 +124,12 @@ export class ProductsController {
     )
     image: Express.Multer.File,
   ) {
-    const userRole = req.user.role as 'USER' | 'WORKER';
-
-    if (userRole !== 'WORKER') {
-      throw new ForbiddenException(
-        "You don't have permission to create a product",
-      );
-    }
-
+    this.validateWorkerRole(req.user.role);
     return this.productsService.create(createProductDto, image);
   }
 
   /**
-   * List all products
+   * Get all products
    */
   @Get()
   @ApiResponse({
@@ -163,7 +142,7 @@ export class ProductsController {
   }
 
   /**
-   * Get a single product by id
+   * Get product details by ID
    */
   @Get(':id')
   @ApiParam({
@@ -172,21 +151,14 @@ export class ProductsController {
     description: 'Product ID',
     type: Number,
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Product details',
-    type: Product,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Product not found',
-  })
+  @ApiResponse({ status: 200, description: 'Product details', type: Product })
+  @ApiResponse({ status: 404, description: 'Product not found' })
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
   }
 
   /**
-   * Get the image of a product by id
+   * Get product image by ID
    */
   @Get(':id/image')
   @ApiParam({
@@ -198,14 +170,13 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'Product image',
-    type: 'file',
   })
   async getImage(@Param('id') id: string, @Response() res) {
     return this.productsService.getImage(+id, res);
   }
 
   /**
-   * Update a product by id (only for workers)
+   * Update a product (only for workers)
    */
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
@@ -220,22 +191,10 @@ export class ProductsController {
     schema: {
       type: 'object',
       properties: {
-        name: {
-          type: 'string',
-          description: 'Product name',
-        },
-        description: {
-          type: 'string',
-          description: 'Product description',
-        },
-        price: {
-          type: 'number',
-          description: 'Product price',
-        },
-        quantity: {
-          type: 'number',
-          description: 'Product quantity',
-        },
+        name: { type: 'string', description: 'Product name' },
+        description: { type: 'string', description: 'Product description' },
+        price: { type: 'number', description: 'Product price' },
+        quantity: { type: 'number', description: 'Product quantity' },
         image: {
           type: 'string',
           format: 'binary',
@@ -249,22 +208,13 @@ export class ProductsController {
     description: 'Product updated successfully',
     type: Product,
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Not Found',
-  })
+  @ApiResponse({ status: 404, description: 'Product not found' })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('image', multerOptions))
@@ -283,19 +233,12 @@ export class ProductsController {
     )
     image: Express.Multer.File,
   ) {
-    const userRole = req.user.role as 'USER' | 'WORKER';
-
-    if (userRole !== 'WORKER') {
-      throw new ForbiddenException(
-        "You don't have permission to update a product",
-      );
-    }
-
+    this.validateWorkerRole(req.user.role);
     return this.productsService.update(+id, updateProductDto, image);
   }
 
   /**
-   * Delete a product by id (only for workers)
+   * Delete a product (only for workers)
    */
   @Delete(':id')
   @ApiParam({
@@ -304,70 +247,36 @@ export class ProductsController {
     description: 'Product ID',
     type: Number,
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Product deleted successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 200, description: 'Product deleted successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Not Found',
-  })
+  @ApiResponse({ status: 404, description: 'Product not found' })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
   async remove(@Request() req, @Param('id') id: string) {
-    const userRole = req.user.role as 'USER' | 'WORKER';
-
-    if (userRole !== 'WORKER') {
-      throw new ForbiddenException(
-        "You don't have permission to delete a product",
-      );
-    }
-
+    this.validateWorkerRole(req.user.role);
     return this.productsService.remove(+id);
   }
 
   /**
-   * Buy a products by ids
+   * Buy products
    */
   @Patch('buy')
-  @ApiResponse({
-    status: 200,
-    description: 'Products bought successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
+  @ApiResponse({ status: 200, description: 'Products bought successfully' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden',
+    description: "You don't have permission to perform this action",
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Not Found',
-  })
-  @ApiBody({
-    description: 'Products to buy',
-    type: BuyProductDto,
-  })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  @ApiBody({ description: 'Products to buy', type: BuyProductDto })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
-  buy(
-    @Body()
-    buyProductDto: BuyProductDto,
-  ) {
+  buy(@Body() buyProductDto: BuyProductDto) {
     return this.productsService.buy(buyProductDto);
   }
 }

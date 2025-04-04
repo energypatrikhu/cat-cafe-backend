@@ -13,41 +13,49 @@ import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
-  constructor(private db: PrismaService) {}
+  private readonly uploadsPath = n_path.join(
+    __dirname,
+    '../../uploads/products',
+  );
+  private readonly notFoundImagePath = n_path.join(
+    __dirname,
+    '../../srv/images',
+    'imageNotFound.webp',
+  );
 
-  /**
-   * Check if a product exists by id or name.
-   * @throws {NotFoundException} if not found by id.
-   * @throws {ConflictException} if found by name.
-   */
-  async checkForExistingProduct(id: number | null, name: string | null) {
+  constructor(private readonly db: PrismaService) {}
+
+  private async validateProduct(id: number | null, name: string | null) {
     if (id) {
-      const checkProductById = await this.db.product.findUnique({
-        where: { id },
-      });
-      if (!checkProductById) {
-        throw new NotFoundException('Product not found');
-      }
+      const product = await this.db.product.findUnique({ where: { id } });
+      if (!product) throw new NotFoundException('Product not found');
     }
 
     if (name) {
-      const checkProductByName = await this.db.product.findUnique({
-        where: { name },
-      });
-      if (checkProductByName && checkProductByName.id !== id) {
+      const product = await this.db.product.findUnique({ where: { name } });
+      if (product && product.id !== id)
         throw new ConflictException('Name already exists');
-      }
     }
   }
 
+  private buildQueryOrder(query: QueryProductDto) {
+    const order = ['name', 'price'].includes(query.order?.toLowerCase() || '')
+      ? query.order
+      : 'name';
+    const direction = ['asc', 'desc'].includes(
+      query.direction?.toLowerCase() || '',
+    )
+      ? query.direction
+      : 'asc';
+
+    return { order, direction };
+  }
+
   async create(createProductDto: CreateProductDto, image: Express.Multer.File) {
-    await this.checkForExistingProduct(null, createProductDto.name);
+    await this.validateProduct(null, createProductDto.name);
 
     const product = await this.db.product.create({
-      data: {
-        ...createProductDto,
-        image: image.filename,
-      },
+      data: { ...createProductDto, image: image.filename },
     });
 
     delete product.image;
@@ -55,42 +63,14 @@ export class ProductsService {
   }
 
   findAll(query: QueryProductDto) {
-    const queryOrder = query.order
-      ? ['name', 'price'].includes(query.order.toLowerCase())
-        ? query.order
-        : 'name'
-      : 'name';
+    const { order, direction } = this.buildQueryOrder(query);
 
-    const queryDirection = query.direction
-      ? ['asc', 'desc'].includes(query.direction.toLowerCase())
-        ? query.direction
-        : 'asc'
-      : 'asc';
-
-    if (query.search) {
-      return this.db.product.findMany({
-        where: {
-          name: {
-            contains: query.search.toLowerCase(),
-          },
-        },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          price: true,
-          quantity: true,
-        },
-        orderBy: {
-          [queryOrder]: queryDirection,
-        },
-      });
-    }
+    const where = query.search
+      ? { name: { contains: query.search.toLowerCase() } }
+      : undefined;
 
     return this.db.product.findMany({
-      orderBy: {
-        [queryOrder]: queryDirection,
-      },
+      where,
       select: {
         id: true,
         name: true,
@@ -98,16 +78,15 @@ export class ProductsService {
         price: true,
         quantity: true,
       },
+      orderBy: { [order]: direction },
     });
   }
 
   async findOne(id: number) {
-    await this.checkForExistingProduct(id, null);
+    await this.validateProduct(id, null);
 
     return this.db.product.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
       select: {
         id: true,
         name: true,
@@ -123,116 +102,69 @@ export class ProductsService {
     updateProductDto: UpdateProductDto,
     image: Express.Multer.File,
   ) {
-    await this.checkForExistingProduct(productId, updateProductDto.name);
+    await this.validateProduct(productId, updateProductDto.name);
 
-    let newData: Record<string, string | number> = {};
-    if (updateProductDto.name) {
-      newData.name = updateProductDto.name;
-    }
-    if (updateProductDto.description) {
-      newData.description = updateProductDto.description;
-    }
-    if (updateProductDto.price) {
-      newData.price = updateProductDto.price;
-    }
-    if (updateProductDto.quantity) {
-      newData.quantity = updateProductDto.quantity;
-    }
-    if (image) {
-      newData.image = image.filename;
-    }
+    const newData = {
+      ...updateProductDto,
+      ...(image && { image: image.filename }),
+    };
 
     return this.db.product.update({
-      where: {
-        id: productId,
-      },
+      where: { id: productId },
       data: newData,
     });
   }
 
   async getImage(productId: number, res: any) {
-    await this.checkForExistingProduct(productId, null);
+    await this.validateProduct(productId, null);
 
-    const productById = await this.db.product.findUnique({
-      where: {
-        id: productId,
-      },
+    const product = await this.db.product.findUnique({
+      where: { id: productId },
     });
+    const imagePath = n_path.join(this.uploadsPath, product.image);
 
-    const imagePath = n_path.join(
-      __dirname,
-      '../../uploads/products',
-      productById.image,
-    );
+    const resolvedPath = n_fs.existsSync(imagePath)
+      ? imagePath
+      : this.notFoundImagePath;
+    if (!n_fs.existsSync(resolvedPath))
+      throw new NotFoundException('Image not found');
 
-    if (!n_fs.existsSync(imagePath)) {
-      const notFoundImagePath = n_path.join(
-        __dirname,
-        '../../srv/images',
-        'imageNotFound.webp',
-      );
-
-      if (!n_fs.existsSync(notFoundImagePath)) {
-        throw new NotFoundException('Image not found');
-      }
-
-      const notFoundImageStream = n_fs.createReadStream(notFoundImagePath);
-      notFoundImageStream.pipe(res);
-      return;
-    }
-
-    const imageStream = n_fs.createReadStream(imagePath);
+    const imageStream = n_fs.createReadStream(resolvedPath);
     imageStream.pipe(res);
   }
 
   async remove(productId: number) {
-    await this.checkForExistingProduct(productId, null);
+    await this.validateProduct(productId, null);
 
-    await this.db.product.delete({
-      where: {
-        id: productId,
-      },
-    });
-
+    await this.db.product.delete({ where: { id: productId } });
     return 'Product deleted successfully';
   }
 
   async buy(buyProductDto: BuyProductDto) {
     const products = await this.db.product.findMany({
-      where: {
-        id: {
-          in: buyProductDto.products.map((product) => product.id),
-        },
-      },
+      where: { id: { in: buyProductDto.products.map((p) => p.id) } },
     });
 
     const updatedProducts = products.map((product) => {
       const quantity = buyProductDto.products.find(
         (p) => p.id === product.id,
       ).quantity;
-
       if (product.quantity < quantity) {
         throw new NotFoundException(
           `Not enough quantity for product ${product.name}`,
         );
       }
-
-      return {
-        id: product.id,
-        quantity: product.quantity - quantity,
-      };
+      return { id: product.id, quantity: product.quantity - quantity };
     });
 
-    for (const product of updatedProducts) {
-      await this.db.product.update({
-        where: {
-          id: product.id,
-        },
-        data: {
-          quantity: product.quantity,
-        },
-      });
-    }
+    await Promise.all(
+      updatedProducts.map((product) =>
+        this.db.product.update({
+          where: { id: product.id },
+          data: { quantity: product.quantity },
+        }),
+      ),
+    );
 
     return 'Products bought successfully';
   }

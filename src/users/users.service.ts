@@ -13,24 +13,23 @@ import { RegisterUserDto } from './dto/register-user.dto';
 @Injectable()
 export class UsersService {
   constructor(
-    private authService: AuthService,
-    private db: PrismaService,
+    private readonly authService: AuthService,
+    private readonly db: PrismaService,
   ) {}
 
   async register(registerUserDto: RegisterUserDto) {
-    const checkUser = await this.db.user.findUnique({
-      where: { email: registerUserDto.email },
-    });
+    const { email, name, password } = registerUserDto;
 
-    if (checkUser) {
+    const existingUser = await this.db.user.findUnique({ where: { email } });
+    if (existingUser) {
       throw new ConflictException('User already exists');
     }
 
     await this.db.user.create({
       data: {
-        name: registerUserDto.name,
-        email: registerUserDto.email,
-        password: await hash(registerUserDto.password),
+        name,
+        email,
+        password: await hash(password),
       },
     });
 
@@ -38,28 +37,29 @@ export class UsersService {
   }
 
   async login(loginUserDto: LoginUserDto) {
-    const user = await this.authService.findByEmail(loginUserDto.email);
+    const { email, password } = loginUserDto;
 
+    const user = await this.authService.findUserByEmail(email);
     if (!user) {
       throw new BadRequestException('Invalid credentials');
     }
 
-    const isValid = await verify(user.password, loginUserDto.password);
-
-    if (!isValid) {
+    const isPasswordValid = await verify(user.password, password);
+    if (!isPasswordValid) {
       throw new BadRequestException('Invalid credentials');
     }
 
-    const token = await this.authService.createToken(user.id);
-
+    const token = await this.authService.generateToken(user.id);
     return { token };
   }
 
-  logout(logoutUserDto: LogoutUserDto) {
-    return this.authService.deleteToken(logoutUserDto.token);
+  async logout(logoutUserDto: LogoutUserDto) {
+    const { token } = logoutUserDto;
+
+    await this.authService.removeToken(token);
   }
 
-  getMe(userId: number) {
+  async getMe(userId: number) {
     return this.db.user.findUnique({
       where: { id: userId },
       select: {

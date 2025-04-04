@@ -8,31 +8,23 @@ import type { UpdateReservationDto } from './dto/update-reservation.dto';
 
 @Injectable()
 export class ReservationsService {
-  constructor(private db: PrismaService) {}
+  constructor(private readonly db: PrismaService) {}
 
   async create(userId: number, date: Date) {
-    const previousReservation = await this.db.reservation.findFirst({
-      where: {
-        active: true,
-        userId,
-      },
+    const hasActiveReservation = await this.db.reservation.findFirst({
+      where: { active: true, userId },
     });
-    if (previousReservation) {
+
+    if (hasActiveReservation) {
       throw new ForbiddenException('You already have a reservation');
     }
 
     return this.db.reservation.create({
       data: {
         date,
-        User: {
-          connect: { id: userId },
-        },
+        User: { connect: { id: userId } },
       },
-      select: {
-        id: true,
-        date: true,
-        active: true,
-      },
+      select: { id: true, date: true, active: true },
     });
   }
 
@@ -49,28 +41,29 @@ export class ReservationsService {
       select: { Reservation: { where: { id } } },
     });
 
-    if (!reservation || !reservation.Reservation) {
+    if (!reservation?.Reservation?.length) {
       throw new NotFoundException('Reservation not found');
     }
 
-    delete reservation.Reservation[0].userId;
-    return reservation.Reservation[0];
+    const [foundReservation] = reservation.Reservation;
+    delete foundReservation.userId;
+    return foundReservation;
   }
 
   async update(
     reservationId: number,
     updateReservationDto: UpdateReservationDto,
   ) {
-    if (!updateReservationDto.userId) {
+    const { userId } = updateReservationDto;
+
+    if (!userId) {
       throw new ForbiddenException('User ID is required');
     }
 
     const reservation = await this.db.reservation.findFirst({
-      where: {
-        id: reservationId,
-        userId: updateReservationDto.userId,
-      },
+      where: { id: reservationId, userId },
     });
+
     if (!reservation) {
       throw new NotFoundException('Reservation not found');
     }
@@ -85,14 +78,13 @@ export class ReservationsService {
     const reservation = await this.db.reservation.findUnique({
       where: { id: reservationId },
     });
+
     if (!reservation) {
       throw new NotFoundException('Reservation not found');
     }
 
-    await this.db.reservation.delete({
-      where: { id: reservationId },
-    });
+    await this.db.reservation.delete({ where: { id: reservationId } });
 
-    return 'Reservation deleted';
+    return { message: 'Reservation deleted' };
   }
 }
