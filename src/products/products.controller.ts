@@ -18,6 +18,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -38,6 +39,27 @@ import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
 
 const allowedMimeTypes = ['image/jpeg', 'image/webp', 'image/png', 'image/gif'];
+const multerOptions: MulterOptions = {
+  fileFilter: (_req, file, callback) => {
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      return callback(
+        new BadRequestException(
+          `Invalid file type, allowed types: ${allowedMimeTypes.join(', ')}`,
+        ),
+        false,
+      );
+    }
+    callback(null, true);
+  },
+  storage: diskStorage({
+    destination: n_path.join(__dirname, '../../uploads/products'),
+    filename: (_req, file, callback) => {
+      const uniqueFilename = n_crypto.randomUUID();
+      const extension = n_path.extname(file.originalname);
+      callback(null, `${uniqueFilename}${extension}`);
+    },
+  }),
+};
 
 @Controller('products')
 @ApiExtraModels(QueryProductDto)
@@ -101,33 +123,7 @@ export class ProductsController {
   })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
-  @UseInterceptors(
-    FileInterceptor('image', {
-      dest: 'uploads/products',
-      limits: {
-        fileSize: 1024 * 1024 * 32, // 32 MB
-      },
-      fileFilter: (req, file, callback) => {
-        if (!allowedMimeTypes.includes(file.mimetype)) {
-          return callback(
-            new BadRequestException(
-              `Invalid file type, allowed types: ${allowedMimeTypes.join(', ')}`,
-            ),
-            false,
-          );
-        }
-        callback(null, true);
-      },
-      storage: diskStorage({
-        destination: n_path.join(__dirname, '../../uploads/products'),
-        filename: (req, file, callback) => {
-          const uniqueFilename = n_crypto.randomUUID();
-          const extension = n_path.extname(file.originalname);
-          callback(null, `${uniqueFilename}${extension}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   create(
     @Request() req,
     @Body() createProductDto: CreateProductDto,
@@ -271,33 +267,7 @@ export class ProductsController {
   })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
-  @UseInterceptors(
-    FileInterceptor('image', {
-      dest: 'uploads/products',
-      limits: {
-        fileSize: 1024 * 1024 * 32, // 32 MB
-      },
-      fileFilter: (req, file, callback) => {
-        if (!allowedMimeTypes.includes(file.mimetype)) {
-          return callback(
-            new BadRequestException(
-              `Invalid file type, allowed types: ${allowedMimeTypes.join(', ')}`,
-            ),
-            false,
-          );
-        }
-        callback(null, true);
-      },
-      storage: diskStorage({
-        destination: n_path.join(__dirname, '../../uploads/products'),
-        filename: (req, file, callback) => {
-          const uniqueFilename = n_crypto.randomUUID();
-          const extension = n_path.extname(file.originalname);
-          callback(null, `${uniqueFilename}${extension}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   async update(
     @Request() req,
     @Param('id') id: string,

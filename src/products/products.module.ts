@@ -9,6 +9,13 @@ import { ProductsService } from './products.service';
 @Module({
   controllers: [ProductsController],
   providers: [ProductsService, PrismaService],
-  imports: [MulterModule.register()],
+  imports: [
+    MulterModule.register({
+      dest: 'uploads/products',
+      limits: {
+        fileSize: 1024 * 1024 * 32, // 32 MB
+      },
+    }),
+  ],
 })
 export class ProductsModule {}
