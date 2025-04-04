@@ -382,14 +382,16 @@ export class ProductsController {
   })
   @ApiBody({
     description: 'Products to buy',
-    type: [BuyProductDto],
+    type: BuyProductDto,
   })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
   buy(
-    @Body('products')
-    products: BuyProductDto[],
+    @Body()
+    buyProductDto: BuyProductDto,
   ) {
-    return this.productsService.buy(products);
+    // console.log(buyProductDto);
+    // return buyProductDto;
+    return this.productsService.buy(buyProductDto);
   }
 }

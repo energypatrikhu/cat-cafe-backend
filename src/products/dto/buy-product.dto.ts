@@ -1,6 +1,6 @@
 import { IsInt, IsPositive } from 'class-validator';
 
-export class BuyProductDto {
+class BuyProduct {
   @IsInt()
   @IsPositive()
   id: number;
@@ -8,4 +8,8 @@ export class BuyProductDto {
   @IsInt()
   @IsPositive()
   quantity: number;
+}
+
+export class BuyProductDto {
+  products: BuyProduct[];
 }

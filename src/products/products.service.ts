@@ -185,17 +185,19 @@ export class ProductsService {
     return 'Product deleted successfully';
   }
 
-  async buy(buyProductDto: BuyProductDto[]) {
+  async buy(buyProductDto: BuyProductDto) {
     const products = await this.db.product.findMany({
       where: {
         id: {
-          in: buyProductDto.map((product) => product.id),
+          in: buyProductDto.products.map((product) => product.id),
         },
       },
     });
 
     const updatedProducts = products.map((product) => {
-      const quantity = buyProductDto.find((p) => p.id === product.id).quantity;
+      const quantity = buyProductDto.products.find(
+        (p) => p.id === product.id,
+      ).quantity;
 
       if (product.quantity < quantity) {
         throw new NotFoundException(
@@ -204,19 +206,21 @@ export class ProductsService {
       }
 
       return {
-        ...product,
+        id: product.id,
         quantity: product.quantity - quantity,
       };
     });
 
-    await this.db.product.updateMany({
-      where: {
-        id: {
-          in: updatedProducts.map((product) => product.id),
+    for (const product of updatedProducts) {
+      await this.db.product.update({
+        where: {
+          id: product.id,
         },
-      },
-      data: updatedProducts,
-    });
+        data: {
+          quantity: product.quantity,
+        },
+      });
+    }
 
     return 'Products bought successfully';
   }
