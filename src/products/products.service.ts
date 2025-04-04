@@ -108,6 +108,13 @@ export class ProductsService {
       where: {
         id,
       },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        quantity: true,
+      },
     });
   }
 
