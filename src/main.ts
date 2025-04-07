@@ -24,7 +24,7 @@ import { AppModule } from './app.module';
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Cat Coffee Webshop API')
+    .setTitle('Cat Cafe Webshop API')
     .setDescription('Ez az api-ja a cat coffee webshopnak')
     .addBearerAuth()
     .build();

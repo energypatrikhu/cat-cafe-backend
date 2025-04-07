@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'cat-coffee-backend',
+      name: 'cat-cafe-backend',
       script: 'npm run start:debug',
     },
   ],
