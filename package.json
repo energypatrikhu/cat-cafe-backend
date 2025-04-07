@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && esbuild --minify --format=cjs --platform=node ./prisma/seed.ts --outfile=./dist/prisma/seed.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "prisma": {
-    "seed": "ts-node ./prisma/seed.ts"
+    "seed": "node ./dist/prisma/seed.js"
   },
   "dependencies": {
     "@faker-js/faker": "9.6.0",
@@ -52,6 +52,7 @@
     "@types/supertest": "6.0.3",
     "@typescript-eslint/eslint-plugin": "8.29.0",
     "@typescript-eslint/parser": "8.29.0",
+    "esbuild": "^0.25.2",
     "eslint": "9.24.0",
     "eslint-config-prettier": "10.1.1",
     "eslint-plugin-prettier": "5.2.6",
