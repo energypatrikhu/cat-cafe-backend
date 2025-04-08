@@ -1,6 +1,7 @@
 # Cat Cafe Backend
 
 This is the backend for the Cat Cafe Webshop, built with [NestJS](https://nestjs.com/) and [Prisma](https://www.prisma.io/).
+> For the full docker application check out the [cat-cafe-compose](https://github.com/energypatrikhu/cat-cafe-compose) repository
 
 ## Prerequisites
 
@@ -104,6 +105,7 @@ docker run -p 3000:3000 --env-file .env cat-cafe-backend
 # Cat Cafe Backend
 
 Ez a Cat Cafe Webshop backendje, amely [NestJS](https://nestjs.com/) és [Prisma](https://www.prisma.io/) használatával készült.
+> A teljes Docker alkalmazásért nézd meg a [cat-cafe-compose](https://github.com/energypatrikhu/cat-cafe-compose) repót
 
 ## Előfeltételek
 
