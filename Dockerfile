@@ -22,6 +22,7 @@ RUN chmod -f +x ./*.sh
 # Expose the application port
 EXPOSE 3000
 
+# Set the entrypoint script
 ENTRYPOINT [ "/app/docker-entrypoint.sh" ]
 
 # Set the entrypoint
