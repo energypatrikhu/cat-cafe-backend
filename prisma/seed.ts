@@ -20,19 +20,6 @@ async function seed_products() {
   }
 }
 
-async function seed_blog_posts() {
-  console.log(' Seeding blog posts...');
-
-  for (let i = 0; i < 10; i++) {
-    await prisma.blog.create({
-      data: {
-        title: faker.lorem.words(5),
-        content: faker.lorem.paragraphs(3),
-      },
-    });
-  }
-}
-
 async function seed_users() {
   console.log(' Seeding users...');
 
@@ -105,7 +92,6 @@ async function seed() {
 
   await seed_users();
   await seed_products();
-  await seed_blog_posts();
   await seed_reservations();
 
   console.log('< < < Seeding complete > > >');
