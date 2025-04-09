@@ -264,14 +264,10 @@ export class ProductsController {
   /**
    * Buy products
    */
-  @Patch('buy')
+  @Patch()
   @ApiResponse({ status: 200, description: 'Products bought successfully' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({
-    status: 403,
-    description: "You don't have permission to perform this action",
-  })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiBody({ description: 'Products to buy', type: BuyProductDto })
   @UseGuards(BearerAuthGuard)
