@@ -10,7 +10,6 @@ import {
 import { ApiBearerAuth, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { BearerAuthGuard } from '../auth/auth.guard';
 import { LoginUserDto } from './dto/login-user.dto';
-import { LogoutUserDto } from './dto/logout-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -76,22 +75,12 @@ export class UsersController {
    * Logout a user
    */
   @Delete('logout')
-  @ApiBody({
-    type: LogoutUserDto,
-    examples: {
-      user: {
-        value: {
-          token: 'example-token',
-        },
-      },
-    },
-  })
   @ApiResponse({ status: 200, description: 'Logout successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(BearerAuthGuard)
   @ApiBearerAuth()
-  async logout(@Body() body: LogoutUserDto) {
-    await this.usersService.logout(body);
+  async logout(@Request() req) {
+    await this.usersService.logout(req.user.token);
     return 'Logout successful';
   }
 

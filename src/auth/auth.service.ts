@@ -38,7 +38,7 @@ export class AuthService {
 
     if (user) {
       delete user.password;
-      return user;
+      return { ...user, token };
     }
 
     return null;

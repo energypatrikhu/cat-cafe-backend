@@ -7,7 +7,6 @@ import { hash, verify } from 'argon2';
 import { AuthService } from '../auth/auth.service';
 import { PrismaService } from '../prisma.service';
 import { LoginUserDto } from './dto/login-user.dto';
-import { LogoutUserDto } from './dto/logout-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
@@ -53,9 +52,7 @@ export class UsersService {
     return { token };
   }
 
-  async logout(logoutUserDto: LogoutUserDto) {
-    const { token } = logoutUserDto;
-
+  async logout(token: string) {
     await this.authService.removeToken(token);
   }
 
