@@ -65,7 +65,7 @@ To populate the database with sample data, run:
 
 ```bash
 npm run build
-npm run prisma:seed
+npx prisma db seed
 ```
 
 ### 7. Start the Application
@@ -169,7 +169,7 @@ Az adatbázis feltöltéséhez mintaadatokkal futtasd:
 
 ```bash
 npm run build
-npm run prisma:seed
+npx prisma db seed
 ```
 
 ### 7. Alkalmazás indítása
