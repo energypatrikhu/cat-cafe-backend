@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -17,6 +18,14 @@ export class ReservationsService {
 
     if (hasActiveReservation) {
       throw new ForbiddenException('You already have a reservation');
+    }
+
+    const sameDateReservation = await this.db.reservation.findFirst({
+      where: { date },
+    });
+
+    if (sameDateReservation) {
+      throw new ConflictException('This date is already reserved');
     }
 
     return this.db.reservation.create({
@@ -54,14 +63,8 @@ export class ReservationsService {
     reservationId: number,
     updateReservationDto: UpdateReservationDto,
   ) {
-    const { userId } = updateReservationDto;
-
-    if (!userId) {
-      throw new ForbiddenException('User ID is required');
-    }
-
     const reservation = await this.db.reservation.findFirst({
-      where: { id: reservationId, userId },
+      where: { id: reservationId },
     });
 
     if (!reservation) {

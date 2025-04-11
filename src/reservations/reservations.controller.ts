@@ -56,6 +56,10 @@ export class ReservationsController {
     status: 403,
     description: 'User already has an active reservation',
   })
+  @ApiResponse({
+    status: 409,
+    description: 'This date is already reserved',
+  })
   create(@Request() req, @Body() createReservationDto: CreateReservationDto) {
     const { id: userId } = req.user;
     const date = new Date(createReservationDto.date);
