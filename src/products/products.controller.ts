@@ -3,7 +3,6 @@ import {
   Body,
   Controller,
   Delete,
-  FileTypeValidator,
   ForbiddenException,
   Get,
   Param,
@@ -116,15 +115,7 @@ export class ProductsController {
     @Request() req,
     @Body()
     createProductDto: CreateProductDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({
-            fileType: new RegExp(allowedMimeTypes.join('|')),
-          }),
-        ],
-      }),
-    )
+    @UploadedFile(new ParseFilePipe())
     image: Express.Multer.File,
   ) {
     this.validateWorkerRole(req.user.role);
@@ -226,15 +217,7 @@ export class ProductsController {
     @Param('id') id: string,
     @Body()
     updateProductDto: UpdateProductDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({
-            fileType: new RegExp(allowedMimeTypes.join('|')),
-          }),
-        ],
-      }),
-    )
+    @UploadedFile(new ParseFilePipe())
     image: Express.Multer.File,
   ) {
     this.validateWorkerRole(req.user.role);
