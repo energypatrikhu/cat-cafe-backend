@@ -37,7 +37,7 @@ model Token {
   token String @unique
 
   userId Int
-  User   User @relation(fields: [userId], references: [id])
+  User   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Reservation {
@@ -46,7 +46,7 @@ model Reservation {
   active Boolean  @default(true)
 
   userId Int
-  User   User @relation(fields: [userId], references: [id])
+  User   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Product {
