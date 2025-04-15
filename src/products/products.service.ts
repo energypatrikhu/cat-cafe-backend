@@ -54,6 +54,9 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto, image: Express.Multer.File) {
     await this.validateProduct(null, createProductDto.name);
 
+    createProductDto.price = parseFloat(createProductDto.price.toString());
+    createProductDto.quantity = parseInt(createProductDto.quantity.toString());
+
     const product = await this.db.product.create({
       data: { ...createProductDto, image: image.filename },
     });
@@ -103,6 +106,16 @@ export class ProductsService {
     image: Express.Multer.File,
   ) {
     await this.validateProduct(productId, updateProductDto.name);
+
+    if (updateProductDto.price) {
+      updateProductDto.price = parseFloat(updateProductDto.price.toString());
+    }
+
+    if (updateProductDto.quantity) {
+      updateProductDto.quantity = parseInt(
+        updateProductDto.quantity.toString(),
+      );
+    }
 
     const newData = {
       ...updateProductDto,
