@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  PreconditionFailedException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -23,12 +24,23 @@ export class RoleGuard implements CanActivate {
     const user = request.user;
     if (!user) {
       console.log('[Role] User not found in request');
+      throw new PreconditionFailedException();
+    }
+
+    return this.checkRole(requiredRole, user.role);
+  }
+
+  private checkRole(requiredRole: string, userRole: string): boolean {
+    if (requiredRole !== userRole) {
+      console.log(
+        `[Role] User role "${userRole}" does not match required role "${requiredRole}"`,
+      );
       throw new UnauthorizedException();
     }
 
     console.log(
-      `[Role] User role: "${user.role}" | Required role: "${requiredRole}"`,
+      `[Role] User role "${userRole}" matches required role "${requiredRole}"`,
     );
-    return requiredRole === user.role;
+    return true;
   }
 }
