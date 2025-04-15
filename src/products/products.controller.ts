@@ -16,6 +16,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
@@ -66,6 +67,8 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   private validateWorkerRole(userRole: 'USER' | 'WORKER') {
+    console.log(`User role: ${userRole}`);
+
     if (userRole !== 'WORKER') {
       throw new ForbiddenException(
         "You don't have permission to perform this action",
@@ -112,7 +115,15 @@ export class ProductsController {
   @UseInterceptors(FileInterceptor('image', multerOptions))
   create(
     @Request() req,
-    @Body() createProductDto: CreateProductDto,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      }),
+    )
+    createProductDto: CreateProductDto,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -221,7 +232,15 @@ export class ProductsController {
   async update(
     @Request() req,
     @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      }),
+    )
+    updateProductDto: UpdateProductDto,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
