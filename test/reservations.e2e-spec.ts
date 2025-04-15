@@ -48,7 +48,7 @@ describe('ReservationsController (e2e)', () => {
 
     const response = await request(app.getHttpServer())
       .post('/reservations')
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .send({
         date: futureDate.toISOString(),
       })
@@ -63,7 +63,7 @@ describe('ReservationsController (e2e)', () => {
   it('/reservations (POST) - conflict error', async () => {
     await request(app.getHttpServer())
       .post('/reservations')
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .send({
         date: new Date().toISOString(),
       })
@@ -73,7 +73,7 @@ describe('ReservationsController (e2e)', () => {
   it('/reservations (GET) - success', async () => {
     const response = await request(app.getHttpServer())
       .get('/reservations')
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .expect(200);
 
     expect(Array.isArray(response.body)).toBe(true);
@@ -82,14 +82,14 @@ describe('ReservationsController (e2e)', () => {
   it('/reservations/:id (GET) - not found', async () => {
     await request(app.getHttpServer())
       .get('/reservations/9999')
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .expect(404);
   });
 
   it('/reservations/:id (GET) - success', async () => {
     const response = await request(app.getHttpServer())
       .get(`/reservations/${reservationId}`)
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .expect(200);
 
     expect(response.body).toHaveProperty('id', reservationId);
@@ -98,7 +98,7 @@ describe('ReservationsController (e2e)', () => {
   it('/reservations/:id (PATCH) - success (worker)', async () => {
     const response = await request(app.getHttpServer())
       .patch(`/reservations/${reservationId}`)
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('authorization', `Bearer ${workerToken}`)
       .send({
         active: false,
       })
@@ -110,7 +110,7 @@ describe('ReservationsController (e2e)', () => {
   it('/reservations/:id (DELETE) - success (worker)', async () => {
     await request(app.getHttpServer())
       .delete(`/reservations/${reservationId}`)
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('authorization', `Bearer ${workerToken}`)
       .expect(200);
   });
 });

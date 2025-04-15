@@ -43,7 +43,7 @@ describe('ProductsController (e2e)', () => {
   it('/products (POST) - success (worker)', async () => {
     const response = await request(app.getHttpServer())
       .post('/products')
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('authorization', `Bearer ${workerToken}`)
       .field('name', 'Test Product')
       .field('description', 'A test product')
       .field('price', 10.99)
@@ -52,13 +52,19 @@ describe('ProductsController (e2e)', () => {
       .expect(201);
 
     productId = response.body.id;
+    console.log(`Product ID: ${productId}`);
+
     expect(response.body).toHaveProperty('id');
+    expect(response.body).toHaveProperty('name', 'Test Product');
+    expect(response.body).toHaveProperty('description', 'A test product');
+    expect(response.body).toHaveProperty('price', 10.99);
+    expect(response.body).toHaveProperty('quantity', 100);
   });
 
   it('/products (POST) - forbidden (user)', async () => {
     await request(app.getHttpServer())
       .post('/products')
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .field('name', 'Test Product')
       .field('description', 'A test product')
       .field('price', 10.99)
@@ -70,7 +76,7 @@ describe('ProductsController (e2e)', () => {
   it('/products (POST) - validation error', async () => {
     await request(app.getHttpServer())
       .post('/products')
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('authorization', `Bearer ${workerToken}`)
       .field('name', '')
       .field('description', 'A test product')
       .field('price', -10.99)
@@ -101,7 +107,7 @@ describe('ProductsController (e2e)', () => {
   it('/products/:id (PATCH) - success (worker)', async () => {
     const response = await request(app.getHttpServer())
       .patch(`/products/${productId}`)
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('authorization', `Bearer ${workerToken}`)
       .field('name', 'Updated Product')
       .field('description', 'Updated description')
       .field('price', 15.99)
@@ -115,7 +121,7 @@ describe('ProductsController (e2e)', () => {
   it('/products/:id (PATCH) - forbidden (user)', async () => {
     await request(app.getHttpServer())
       .patch(`/products/${productId}`)
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .field('name', 'Updated Product')
       .expect(403);
   });
@@ -123,21 +129,21 @@ describe('ProductsController (e2e)', () => {
   it('/products/:id (DELETE) - success (worker)', async () => {
     await request(app.getHttpServer())
       .delete(`/products/${productId}`)
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('authorization', `Bearer ${workerToken}`)
       .expect(200);
   });
 
   it('/products/:id (DELETE) - forbidden (user)', async () => {
     await request(app.getHttpServer())
       .delete(`/products/${productId}`)
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .expect(403);
   });
 
   it('/products (PATCH) - buy products (user)', async () => {
     const response = await request(app.getHttpServer())
       .patch('/products')
-      .set('Authorization', `Bearer ${userToken}`)
+      .set('authorization', `Bearer ${userToken}`)
       .send({
         products: [
           {
@@ -148,6 +154,6 @@ describe('ProductsController (e2e)', () => {
       })
       .expect(200);
 
-    expect(response.body).toEqual('Products bought successfully');
+    expect(response.text).toEqual('Products bought successfully'); // Adjusted to check `response.text`
   });
 });

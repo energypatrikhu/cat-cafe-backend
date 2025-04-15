@@ -7,6 +7,10 @@ describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let token: string;
 
+  let name = `testuser-${Date.now()}`;
+  let email = `testuser-${Date.now()}@example.com`;
+  let password = 'StrongP@ssw0rd!';
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -24,13 +28,13 @@ describe('UsersController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/users/register')
       .send({
-        name: 'Test User',
-        email: 'testuser@example.com',
-        password: 'StrongP@ssw0rd!',
+        name,
+        email,
+        password,
       })
       .expect(201);
 
-    expect(response.body).toEqual('User created');
+    expect(response.text).toEqual('User created');
   });
 
   it('/users/register (POST) - validation error', async () => {
@@ -48,8 +52,8 @@ describe('UsersController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/users/login')
       .send({
-        email: 'testuser@example.com',
-        password: 'StrongP@ssw0rd!',
+        email,
+        password,
       })
       .expect(201);
 
@@ -70,10 +74,10 @@ describe('UsersController (e2e)', () => {
   it('/users/me (GET) - success', async () => {
     const response = await request(app.getHttpServer())
       .get('/users/me')
-      .set('Authorization', `Bearer ${token}`)
+      .set('authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(response.body).toHaveProperty('name', 'Test User');
+    expect(response.body).toHaveProperty('name', name);
   });
 
   it('/users/me (GET) - unauthorized', async () => {
@@ -83,7 +87,7 @@ describe('UsersController (e2e)', () => {
   it('/users/logout (DELETE) - success', async () => {
     await request(app.getHttpServer())
       .delete('/users/logout')
-      .set('Authorization', `Bearer ${token}`)
+      .set('authorization', `Bearer ${token}`)
       .expect(200);
   });
 });
