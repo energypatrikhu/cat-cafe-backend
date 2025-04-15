@@ -16,7 +16,6 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
@@ -115,14 +114,7 @@ export class ProductsController {
   @UseInterceptors(FileInterceptor('image', multerOptions))
   create(
     @Request() req,
-    @Body(
-      new ValidationPipe({
-        transform: true,
-        transformOptions: {
-          enableImplicitConversion: true,
-        },
-      }),
-    )
+    @Body()
     createProductDto: CreateProductDto,
     @UploadedFile(
       new ParseFilePipe({
@@ -232,14 +224,7 @@ export class ProductsController {
   async update(
     @Request() req,
     @Param('id') id: string,
-    @Body(
-      new ValidationPipe({
-        transform: true,
-        transformOptions: {
-          enableImplicitConversion: true,
-        },
-      }),
-    )
+    @Body()
     updateProductDto: UpdateProductDto,
     @UploadedFile(
       new ParseFilePipe({
