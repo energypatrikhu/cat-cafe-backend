@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -12,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { BearerAuthGuard } from '../auth/auth.guard';
+import { Role } from '../auth/role.decorator';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { Reservation } from './entities/reservation.entity';
@@ -22,14 +22,6 @@ import { ReservationsService } from './reservations.service';
 @ApiBearerAuth()
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
-
-  private validateWorkerRole(userRole: 'USER' | 'WORKER') {
-    if (userRole !== 'WORKER') {
-      throw new ForbiddenException(
-        "You don't have permission to perform this action",
-      );
-    }
-  }
 
   /**
    * Create a new reservation
@@ -124,12 +116,11 @@ export class ReservationsController {
     description: "You don't have permission to perform this action",
   })
   @ApiResponse({ status: 404, description: 'Reservation not found' })
+  @Role('WORKER')
   update(
-    @Request() req,
     @Param('id') id: string,
     @Body() updateReservationDto: UpdateReservationDto,
   ) {
-    this.validateWorkerRole(req.user.role);
     return this.reservationsService.update(+id, updateReservationDto);
   }
 
@@ -150,8 +141,8 @@ export class ReservationsController {
     description: "You don't have permission to perform this action",
   })
   @ApiResponse({ status: 404, description: 'Reservation not found' })
-  remove(@Request() req, @Param('id') id: string) {
-    this.validateWorkerRole(req.user.role);
+  @Role('WORKER')
+  remove(@Param('id') id: string) {
     return this.reservationsService.remove(+id);
   }
 }
