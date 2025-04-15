@@ -2,7 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  UnauthorizedException,
+  PreconditionFailedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from './role.decorator';
@@ -23,7 +23,7 @@ export class RoleGuard implements CanActivate {
     const user = request.user;
     if (!user) {
       console.log('[Role] User not found in request');
-      throw new UnauthorizedException();
+      throw new PreconditionFailedException();
     }
 
     console.log(

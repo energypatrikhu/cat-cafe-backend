@@ -2,7 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  UnauthorizedException,
+  PreconditionFailedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Authenticated } from './auth.decorator';
@@ -26,7 +26,7 @@ export class AuthenticationGuard implements CanActivate {
 
     if (!request.user) {
       console.log('[Auth] User not logged in');
-      throw new UnauthorizedException();
+      throw new PreconditionFailedException();
     }
 
     console.log(`[Auth] User logged in: ${request.user.email}`);
