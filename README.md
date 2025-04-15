@@ -44,7 +44,7 @@ You can use the `.env.example` file as a reference.
 Run the following command to start a MySQL container:
 
 ```bash
-docker run --name cat-cafe-db -e MYSQL_ROOT_PASSWORD=cat-cafe-psw -e MYSQL_DATABASE=cat-cafe-db -p 3306:3306 -d mysql:latest
+docker run --name cat-cafe-db -e MARIADB_ROOT_PASSWORD=cat-cafe-psw -e MARIADB_DATABASE=cat-cafe-db -p 3306:3306 -d mariadb:latest
 ```
 
 #### Option 2: Using a Local MySQL Instance
@@ -161,7 +161,7 @@ Használhatod a `.env.example` fájlt referenciaként.
 Futtasd az alábbi parancsot egy MySQL konténer indításához:
 
 ```bash
-docker run --name cat-cafe-db -e MYSQL_ROOT_PASSWORD=cat-cafe-psw -e MYSQL_DATABASE=cat-cafe-db -p 3306:3306 -d mysql:latest
+docker run --name cat-cafe-db -e MARIADB_ROOT_PASSWORD=cat-cafe-psw -e MARIADB_DATABASE=cat-cafe-db -p 3306:3306 -d mariadb:latest
 ```
 
 #### Opció 2: Helyi MySQL példány használatával
