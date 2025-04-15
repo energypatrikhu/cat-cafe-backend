@@ -1,11 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaClient } from '@prisma/client';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let token: string;
+  let prisma = new PrismaClient();
 
   let name = `testuser-${Date.now()}`;
   let email = `testuser-${Date.now()}@example.com`;
@@ -89,5 +91,9 @@ describe('UsersController (e2e)', () => {
       .delete('/users/logout')
       .set('authorization', `Bearer ${token}`)
       .expect(200);
+
+    await prisma.user.delete({
+      where: { email },
+    });
   });
 });
