@@ -23,9 +23,12 @@ import { AppModule } from './app.module';
     }),
   );
 
+  // app.use(authMiddleware);
+  // NOTE: Moved to app.module.ts because of tests
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Cat Cafe Webshop API')
-    .setDescription('Ez az api-ja a cat coffee webshopnak')
+    .setDescription('Ez az api-ja a cat cafe webshopnak')
     .addBearerAuth()
     .build();
   const documentFactory = () =>

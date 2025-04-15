@@ -11,7 +11,6 @@ import {
   Query,
   Response,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -27,7 +26,7 @@ import {
 import { diskStorage } from 'multer';
 import * as n_crypto from 'node:crypto';
 import * as n_path from 'node:path';
-import { BearerAuthGuard } from '../auth/auth.guard';
+import { Authenticated } from '../auth/auth.decorator';
 import { Role } from '../auth/role.decorator';
 import { BuyProductDto } from './dto/buy-product.dto';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -97,7 +96,7 @@ export class ProductsController {
     description: "You don't have permission to perform this action",
   })
   @ApiResponse({ status: 409, description: 'Name already exists' })
-  @UseGuards(BearerAuthGuard)
+  @Authenticated()
   @Role('WORKER')
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('image', multerOptions))
@@ -197,7 +196,7 @@ export class ProductsController {
     description: "You don't have permission to perform this action",
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  @UseGuards(BearerAuthGuard)
+  @Authenticated()
   @Role('WORKER')
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('image', multerOptions))
@@ -228,7 +227,7 @@ export class ProductsController {
     description: "You don't have permission to perform this action",
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  @UseGuards(BearerAuthGuard)
+  @Authenticated()
   @Role('WORKER')
   @ApiBearerAuth()
   async remove(@Param('id') id: string) {
@@ -244,7 +243,7 @@ export class ProductsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiBody({ description: 'Products to buy', type: BuyProductDto })
-  @UseGuards(BearerAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
   buy(@Body() buyProductDto: BuyProductDto) {
     return this.productsService.buy(buyProductDto);

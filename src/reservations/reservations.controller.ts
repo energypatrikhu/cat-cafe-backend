@@ -7,10 +7,9 @@ import {
   Patch,
   Post,
   Request,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { BearerAuthGuard } from '../auth/auth.guard';
+import { Authenticated } from '../auth/auth.decorator';
 import { Role } from '../auth/role.decorator';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
@@ -18,7 +17,7 @@ import { Reservation } from './entities/reservation.entity';
 import { ReservationsService } from './reservations.service';
 
 @Controller('reservations')
-@UseGuards(BearerAuthGuard)
+@Authenticated()
 @ApiBearerAuth()
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}

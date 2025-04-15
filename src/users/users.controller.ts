@@ -1,14 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Post,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Request } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiResponse } from '@nestjs/swagger';
-import { BearerAuthGuard } from '../auth/auth.guard';
+import { Authenticated } from '../auth/auth.decorator';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { User } from './entities/user.entity';
@@ -78,7 +70,7 @@ export class UsersController {
   @Delete('logout')
   @ApiResponse({ status: 200, description: 'Logout successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @UseGuards(BearerAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
   async logout(@Request() req) {
     await this.usersService.logout(req.user.token);
@@ -91,7 +83,7 @@ export class UsersController {
   @Get('me')
   @ApiResponse({ status: 200, description: 'User information', type: User })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @UseGuards(BearerAuthGuard)
+  @Authenticated()
   @ApiBearerAuth()
   getMe(@Request() req) {
     return this.usersService.getMe(req.user.id);
