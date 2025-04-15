@@ -1,4 +1,4 @@
-import { IsInt, IsPositive, ValidateNested } from 'class-validator';
+import { IsInt, IsNotEmpty, IsPositive, ValidateNested } from 'class-validator';
 
 class BuyProduct {
   /**
@@ -6,6 +6,7 @@ class BuyProduct {
    */
   @IsInt()
   @IsPositive()
+  @IsNotEmpty()
   id: number;
 
   /**
@@ -13,6 +14,7 @@ class BuyProduct {
    */
   @IsInt()
   @IsPositive()
+  @IsNotEmpty()
   quantity: number;
 }
 
@@ -21,5 +23,6 @@ export class BuyProductDto {
    * List of products to buy
    */
   @ValidateNested({ each: true })
+  @IsNotEmpty({ each: true })
   products: BuyProduct[];
 }
