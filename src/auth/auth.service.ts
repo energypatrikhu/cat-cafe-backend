@@ -6,15 +6,6 @@ import { PrismaService } from '../prisma.service';
 export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUserByToken(token: string) {
-    const tokenRecord = await this.prisma.token.findUnique({
-      where: { token },
-      select: { User: true },
-    });
-
-    return tokenRecord?.User || null;
-  }
-
   async findUserByEmail(email: string) {
     return this.prisma.user.findUnique({ where: { email } });
   }
@@ -31,16 +22,5 @@ export class AuthService {
 
   async removeToken(token: string) {
     return this.prisma.token.delete({ where: { token } });
-  }
-
-  async validateToken(token: string) {
-    const user = await this.findUserByToken(token);
-
-    if (user) {
-      delete user.password;
-      return { ...user, token };
-    }
-
-    return null;
   }
 }
