@@ -25,6 +25,7 @@ describe('ReservationsController (e2e)', () => {
       });
 
     userToken = userLoginResponse.body.token;
+    console.log(`User token: ${userToken}`);
 
     const workerLoginResponse = await request(app.getHttpServer())
       .post('/users/login')
@@ -34,6 +35,7 @@ describe('ReservationsController (e2e)', () => {
       });
 
     workerToken = workerLoginResponse.body.token;
+    console.log(`Worker token: ${workerToken}`);
   });
 
   afterAll(async () => {
@@ -41,15 +43,20 @@ describe('ReservationsController (e2e)', () => {
   });
 
   it('/reservations (POST) - success', async () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 1); // Ensure the date is in the future
+
     const response = await request(app.getHttpServer())
       .post('/reservations')
       .set('Authorization', `Bearer ${userToken}`)
       .send({
-        date: new Date().toISOString(),
+        date: futureDate.toISOString(),
       })
       .expect(201);
 
     reservationId = response.body.id;
+    console.log(`Reservation ID: ${reservationId}`);
+
     expect(response.body).toHaveProperty('id');
   });
 
