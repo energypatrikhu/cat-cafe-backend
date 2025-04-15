@@ -18,6 +18,9 @@ export class UsersService {
 
   async register(registerUserDto: RegisterUserDto) {
     const { email, name, password } = registerUserDto;
+    if (!email || !name || !password) {
+      throw new BadRequestException('Missing required fields');
+    }
 
     const existingUser = await this.db.user.findUnique({ where: { email } });
     if (existingUser) {
