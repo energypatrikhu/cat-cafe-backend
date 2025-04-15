@@ -87,6 +87,19 @@ npm run start:prod
 
 The application will be available at `http://localhost:3000`.
 
+## Tests
+To run the tests, use the following command:
+> **Warning**: Make sure to have the database running before running the tests!
+
+> **Note**: The default worker user is required to run the tests,
+> to create the worker user, it is essential to seed the database first
+> checkout the [seed script](prisma/seed.ts) for more information<br/>
+> OR checkout the [6. Seed the Database (Optional)](#6-seed-the-database-optional) section of this README
+
+```bash
+npm run test:e2e
+```
+
 ## API Documentation
 
 The API documentation is available at the root URL (`http://localhost:3000`) using Swagger.
@@ -190,6 +203,19 @@ npm run start:prod
 ```
 
 Az alkalmazás elérhető lesz a `http://localhost:3000` címen.
+
+## Tesztek
+A tesztek futtatásához használd az alábbi parancsot:
+> **Figyelmeztetés**: Győződj meg arról, hogy az adatbázis fut, mielőtt futtatnád a teszteket!
+
+> **Megjegyzés**: Az alapértelmezett DOLGOZÓ felhasználóra szükség van a tesztek futtatásához,
+> a DOLGOZÓ felhasználó létrehozásához elengedhetetlen az adatbázis feltöltése
+> nézd meg a [seed scriptet](prisma/seed.ts) további információkért<br/>
+> VAGY nézd meg a [6. Adatbázis feltöltése (opcionális)](#6-adatbazis-feltoltese-opcionalis) szakaszt a README fájlban
+
+```bash
+npm run test:e2e
+```
 
 ## API Dokumentáció
 
