@@ -35,6 +35,7 @@ export class UsersController {
     },
   })
   @ApiResponse({ status: 201, description: 'User created' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 409, description: 'User already exists' })
   register(@Body() createUserDto: RegisterUserDto) {
     return this.usersService.register(createUserDto);

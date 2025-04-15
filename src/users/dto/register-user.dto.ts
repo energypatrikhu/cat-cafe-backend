@@ -8,6 +8,7 @@ import {
 export class RegisterUserDto {
   /**
    * User name
+   * Must be a non-empty string.
    */
   @IsString()
   @IsNotEmpty()
@@ -15,6 +16,7 @@ export class RegisterUserDto {
 
   /**
    * User email address
+   * Must be a valid email format and non-empty.
    */
   @IsEmail()
   @IsNotEmpty()
@@ -22,9 +24,16 @@ export class RegisterUserDto {
 
   /**
    * User password
+   * Must be a strong password with at least 8 characters, including uppercase, lowercase, numbers, and symbols.
    */
   @IsString()
-  @IsStrongPassword()
+  @IsStrongPassword({
+    minLength: 8,
+    minLowercase: 1,
+    minUppercase: 1,
+    minNumbers: 1,
+    minSymbols: 1,
+  })
   @IsNotEmpty()
   password: string;
 }
