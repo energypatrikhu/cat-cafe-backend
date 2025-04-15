@@ -20,9 +20,6 @@ model User {
   password String
   role     Role   @default(USER)
 
-  minigamePoints     Int?
-  minigameLastPlayed DateTime?
-
   Token       Token[]
   Reservation Reservation[]
 }
