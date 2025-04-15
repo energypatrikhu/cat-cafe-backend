@@ -3,14 +3,12 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   Param,
   ParseFilePipe,
   Patch,
   Post,
   Query,
-  Request,
   Response,
   UploadedFile,
   UseGuards,
@@ -30,6 +28,7 @@ import { diskStorage } from 'multer';
 import * as n_crypto from 'node:crypto';
 import * as n_path from 'node:path';
 import { BearerAuthGuard } from '../auth/auth.guard';
+import { Role } from '../auth/role.decorator';
 import { BuyProductDto } from './dto/buy-product.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
@@ -63,16 +62,6 @@ const multerOptions: MulterOptions = {
 @ApiExtraModels(QueryProductDto)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
-
-  private validateWorkerRole(userRole: 'USER' | 'WORKER') {
-    console.log(`User role: ${userRole}`);
-
-    if (userRole !== 'WORKER') {
-      throw new ForbiddenException(
-        "You don't have permission to perform this action",
-      );
-    }
-  }
 
   /**
    * Create a new product (only for workers)
@@ -109,16 +98,15 @@ export class ProductsController {
   })
   @ApiResponse({ status: 409, description: 'Name already exists' })
   @UseGuards(BearerAuthGuard)
+  @Role('WORKER')
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('image', multerOptions))
   create(
-    @Request() req,
     @Body()
     createProductDto: CreateProductDto,
     @UploadedFile(new ParseFilePipe())
     image: Express.Multer.File,
   ) {
-    this.validateWorkerRole(req.user.role);
     return this.productsService.create(createProductDto, image);
   }
 
@@ -210,17 +198,16 @@ export class ProductsController {
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @UseGuards(BearerAuthGuard)
+  @Role('WORKER')
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async update(
-    @Request() req,
     @Param('id') id: string,
     @Body()
     updateProductDto: UpdateProductDto,
     @UploadedFile(new ParseFilePipe())
     image: Express.Multer.File,
   ) {
-    this.validateWorkerRole(req.user.role);
     return this.productsService.update(+id, updateProductDto, image);
   }
 
@@ -242,9 +229,9 @@ export class ProductsController {
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @UseGuards(BearerAuthGuard)
+  @Role('WORKER')
   @ApiBearerAuth()
-  async remove(@Request() req, @Param('id') id: string) {
-    this.validateWorkerRole(req.user.role);
+  async remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
   }
 
