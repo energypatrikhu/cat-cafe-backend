@@ -45,6 +45,10 @@ export class ReservationsService {
   }
 
   async findOne(userId: number, id: number) {
+    if (!id) {
+      throw new NotFoundException('Reservation ID is required');
+    }
+
     const reservation = await this.db.user.findUnique({
       where: { id: userId },
       select: { Reservation: { where: { id } } },
