@@ -8,7 +8,6 @@ export async function authMiddleware(
   _res: Response,
   next: NextFunction,
 ) {
-  console.log('Headers:', req.headers);
   let token = req.headers.Authorization;
 
   if (!token) {
